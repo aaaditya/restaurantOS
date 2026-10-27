@@ -1,0 +1,27 @@
+# .NET
+bin/
+obj/
+*.user
+TestResults/
+.vs/
+
+# Node
+node_modules/
+dist/
+*.tsbuildinfo
+frontend/test-results/
+frontend/playwright-report/
+frontend/blob-report/
+frontend/playwright/.cache/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.pfx
+
+# OS / editors
+.DS_Store
+.idea/
+*.swp
