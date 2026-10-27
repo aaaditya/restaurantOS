@@ -1,9 +1,11 @@
 # RestaurantOS
 
 Multi-tenant restaurant management SaaS: browser POS for dine-in, takeaway and delivery, live
-kitchen display, split-payment settlement with sequential GST invoices, menu and outlet management,
-staff roles, cash sessions and audit logs. Inventory, CRM, QR ordering, reports and integrations
-are next on the [roadmap](docs/ROADMAP.md).
+kitchen display, split-payment settlement with sequential GST invoices, menu and multi-outlet
+management, inventory with recipes and purchasing, customers and loyalty, QR table ordering, sales
+and day-end reports, staff roles, cash sessions, audit logs, subscription plans, a partner order API
+with scoped API keys, and online payment links. Payment, billing and delivery-partner providers run
+on built-in test adapters until real provider accounts are connected (see the [roadmap](docs/ROADMAP.md)).
 
 | Layer | Technology |
 | --- | --- |
@@ -26,4 +28,5 @@ See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for prerequisites, tests, migrati
 - [Architecture](docs/ARCHITECTURE.md) and [decision records](docs/adr/)
 - [Roadmap and checklist](docs/ROADMAP.md)
 - [Progress log](docs/PROGRESS.md)
+- [Operations runbook](docs/OPERATIONS.md): configuration, backups, restore
 - [Agent instructions](AGENTS.md)

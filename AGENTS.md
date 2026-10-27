@@ -4,7 +4,7 @@ RestaurantOS is a multi-tenant restaurant management SaaS. Read these before cha
 
 1. `docs/ROADMAP.md` — living checklist with phase acceptance criteria.
 2. `docs/PROGRESS.md` — what was done, verified test results, blockers, **next action**.
-3. `docs/ARCHITECTURE.md` and `docs/adr/*` — accepted decisions. Do not contradict an ADR without
+3. `docs/ARCHITECTURE.md`, `docs/OPERATIONS.md` and `docs/adr/*` — accepted decisions. Do not contradict an ADR without
    adding a new ADR that supersedes it.
 
 ## Resume protocol

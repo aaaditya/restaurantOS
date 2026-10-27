@@ -2,6 +2,50 @@
 
 Newest entries first. Record only what was actually run; include the command and the result.
 
+## 2026-10-27 — Phase 6: subscriptions, API keys, partner orders, online payments
+
+### Completed
+
+- Billing: `/api/billing` (plan, status, usage, catalog), subscribe/switch with outlet and staff limit
+  checks, cancel and resubscribe through an `IBillingProvider` (mock, no charge), all audited. A
+  cancelled workspace is read-only (402 on writes) until it resubscribes. Billing page in the app.
+- API keys: create (shown once, stored hashed, scoped, optionally restricted to one outlet), list,
+  revoke; plan-gated to Growth/Scale. Integrations page with the order API reference.
+- Partner order API `/api/v1/outlets/{id}/menu|orders|orders/{provider}/{externalId}`: idempotent per
+  provider + external id (including concurrent duplicate deliveries), menu-priced, waits for acceptance
+  on the POS (labelled with provider and external id, live via `externalOrderPlaced`). Development-only
+  simulator button sends a test delivery-partner order.
+- Online payments: payment links (intents) from the settle dialog, status polled until the HMAC-signed,
+  deduplicated webhook confirms or fails them; settlement with `Online` requires a confirmed intent of
+  the same amount. Development-only test checkout page `/pay/mock/:ref`.
+- ADR-0006 records the integration, payment and billing provider decisions.
+- Fixes: pending cards said "1 items"; the mock webhook returned 500 instead of 401 when no secret is
+  configured.
+
+### Verified (commands run in the agent VM, PostgreSQL 16 local)
+
+| Check | Result |
+| --- | --- |
+| `dotnet build -warnaserror` (backend) | 0 warnings, 0 errors |
+| `dotnet test --project tests/RestaurantOS.UnitTests` | 35/35 passed |
+| `dotnet test --project tests/RestaurantOS.IntegrationTests` | 40/40 passed (new: plan change/cancel/resubscribe and 402 lock, API key scopes/outlet restriction/revocation/plan gate, partner order replay and concurrent duplicates, simulator permissions, payment intents with signature, replay and late-event handling) |
+| `npm run lint` / `npm run build` (frontend) | 0 errors (7 existing warnings) / passed |
+| `npx playwright test` | 7/7 passed (new: upgrade → API key → partner order with retry → accept → payment link paid on test checkout → settle → revoke → cancel → resubscribe) |
+
+### Remaining work
+
+Phase 7 hardening: forwarded headers behind a proxy, route code-splitting, OpenTelemetry, backup and
+restore runbook.
+
+### Blockers
+
+Real payment gateway, billing provider and delivery-partner adapters need the owner to choose
+providers and supply credentials or partner access. Mock adapters are used meanwhile.
+
+### Next concrete action
+
+Phase 7: forwarded headers, code-splitting, backup runbook, observability.
+
 ## 2026-10-27 — Phases 4–5: inventory, procurement, CRM, QR ordering, reports
 
 ### Completed

@@ -91,10 +91,12 @@ Acceptance: Playwright test upgrades the plan, creates an API key, pushes a part
 ## Phase 7 — Production hardening
 
 - [x] Rate limiting on auth/public endpoints
-- [~] Security headers, CORS allow-list, structured logging, correlation IDs
-- [~] Dockerfiles (multi-stage) and compose for local/prod-like runs
-- [ ] Backups/restore runbook (documented, not automated)
-- [ ] Observability exporters (OpenTelemetry) — planned
+- [x] Security headers (API and nginx CSP), CORS allow-list, trusted forwarded headers, HSTS, JSON structured logging, correlation IDs
+- [~] Dockerfiles (multi-stage) and compose for local/prod-like runs (images not built: no Docker daemon; the nginx config and production bundle were verified with a local nginx)
+- [x] Route-level code splitting (initial bundle 341 kB, down from 613 kB)
+- [x] Printable QR code images per table
+- [x] Backups/restore runbook (`docs/OPERATIONS.md`; dump and restore round trip verified locally)
+- [x] Observability: OpenTelemetry traces and metrics over OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set (export of traces and metrics verified against a local OTLP/HTTP receiver)
 - [ ] Offline-tolerant POS (queued writes) — planned
 - [ ] Real payment gateway / aggregator adapters — **blocked on credentials and partner access**
 - [ ] Thermal printer integration (ESC/POS bridge) — planned
