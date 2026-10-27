@@ -180,7 +180,7 @@ function PoDetail({ id, onClose }: { id: string; onClose: () => void }) {
       void qc.invalidateQueries({ queryKey: ['purchase-orders', outletId] })
       if (kind === 'receive') void qc.invalidateQueries({ queryKey: ['inventory'] })
       toast({ order: 'Marked as ordered', cancel: 'Purchase order cancelled', receive: 'Goods received into stock' }[kind])
-      setMode('view')
+      if (kind === 'receive') setMode('view')
     },
   })
 
@@ -196,10 +196,10 @@ function PoDetail({ id, onClose }: { id: string; onClose: () => void }) {
     <Modal open onClose={onClose} title={p ? `PO-${p.number} · ${p.supplierName}` : 'Purchase order'} size="xl"
       footer={p && <>
         {canAct && mode === 'view' && <Button variant="ghost" className="mr-auto text-rose-700" loading={action.isPending && action.variables === 'cancel'}
-          onClick={() => action.mutate('cancel')}>Cancel PO</Button>}
-        {p.status === 'Draft' && mode === 'view' && <Button variant="secondary" onClick={() => setMode('edit')}><Pencil className="size-4" aria-hidden /> Edit</Button>}
-        {p.status === 'Draft' && mode === 'view' && <Button variant="secondary" loading={action.isPending && action.variables === 'order'} onClick={() => action.mutate('order')}>Mark as ordered</Button>}
-        {canAct && mode === 'view' && <Button onClick={startReceive}>Receive goods</Button>}
+          disabled={action.isPending} onClick={() => action.mutate('cancel')}>Cancel PO</Button>}
+        {p.status === 'Draft' && mode === 'view' && <Button variant="secondary" disabled={action.isPending} onClick={() => setMode('edit')}><Pencil className="size-4" aria-hidden /> Edit</Button>}
+        {p.status === 'Draft' && mode === 'view' && <Button variant="secondary" loading={action.isPending && action.variables === 'order'} disabled={action.isPending} onClick={() => action.mutate('order')}>Mark as ordered</Button>}
+        {canAct && mode === 'view' && <Button disabled={action.isPending} onClick={startReceive}>Receive goods</Button>}
         {mode === 'receive' && <>
           <Button variant="secondary" onClick={() => setMode('view')}>Back</Button>
           <Button variant="success" loading={action.isPending} onClick={() => action.mutate('receive')}>Confirm receipt</Button>

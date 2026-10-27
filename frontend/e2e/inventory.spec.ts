@@ -55,7 +55,15 @@ test('ingredients, recipe, purchase receipt and a sale keep stock correct', asyn
 
   dialog = page.getByRole('dialog', { name: 'PO-1 · Wrap Traders' })
   await expect(dialog).toContainText('₹200.00')
+  // While the status change is in flight, other actions are disabled so its completion cannot reset them.
+  let release!: () => void
+  const held = new Promise<void>((r) => { release = r })
+  await page.route('**/purchase-orders/*/order', async (route) => { await held; await route.continue() })
   await dialog.getByRole('button', { name: 'Mark as ordered' }).click()
+  await expect(dialog.getByRole('button', { name: 'Receive goods' })).toBeDisabled()
+  release()
+  await expect(dialog.getByRole('button', { name: 'Mark as ordered' })).toHaveCount(0)
+  await page.unroute('**/purchase-orders/*/order')
   await expect(dialog).toContainText('Ordered')
   await dialog.getByRole('button', { name: 'Receive goods' }).click()
   await dialog.getByLabel('Received quantity for Spring roll sheets').fill('48')
