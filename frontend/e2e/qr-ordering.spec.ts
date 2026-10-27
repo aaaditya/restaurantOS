@@ -1,3 +1,5 @@
+import jsQR from 'jsqr'
+import { PNG } from 'pngjs'
 import { expect, test } from '@playwright/test'
 import { signup } from './helpers'
 
@@ -13,6 +15,8 @@ test('guest orders from a table QR code, staff accept it live and the guest trac
   await page.getByRole('button', { name: 'QR link' }).click()
   const qrUrl = (await page.getByTestId('qr-url').textContent())!.trim()
   expect(qrUrl).toMatch(/\/qr\/[\w-]+$/)
+  const png = PNG.sync.read(await page.getByTestId('qr-image').screenshot())
+  expect(jsQR(new Uint8ClampedArray(png.data), png.width, png.height)?.data).toBe(qrUrl)
   await page.getByRole('dialog', { name: /QR ordering/ }).getByRole('button', { name: 'Close' }).click()
   await nav.getByRole('link', { name: 'POS' }).click()
 

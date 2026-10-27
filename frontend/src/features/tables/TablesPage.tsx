@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Pencil, Plus, QrCode, RefreshCw } from 'lucide-react'
-import { useState } from 'react'
+import { Download, Pencil, Plus, QrCode, RefreshCw } from 'lucide-react'
+import QRCode from 'qrcode'
+import { useEffect, useState } from 'react'
 import { api } from '../../app/api'
 import { useOutletId } from '../../app/session'
 import { Badge, Button, Card, Checkbox, EmptyState, ErrorBanner, Input, Modal, PageHeader, Spinner, Table as DataTable, Td, useToast } from '../../components/ui'
@@ -96,6 +97,7 @@ function QrDialog({ table, onClose }: { table: Table; onClose: () => void }) {
   const toast = useToast()
   const [token, setToken] = useState(table.qrToken)
   const url = qrUrl(token)
+  const svg = useQrSvg(url)
   const regenerate = useMutation({
     mutationFn: () => api<Table>(`/api/outlets/${outletId}/tables/${table.id}/regenerate-qr`, { method: 'POST' }),
     onSuccess: (t) => {
@@ -121,11 +123,33 @@ function QrDialog({ table, onClose }: { table: Table; onClose: () => void }) {
         <Button onClick={() => void copy()}>Copy link</Button>
       </>}>
       <p className="text-sm text-slate-600">
-        Encode this link in a QR code for the table. Guests can browse the menu and place orders, which staff accept on the POS.
+        Print this code for the table. Guests scan it to browse the menu and place orders, which staff accept on the POS.
         QR ordering must be enabled in outlet settings.
       </p>
+      <div className="mt-4 flex flex-col items-center gap-3">
+        {svg ? <img src={svg} alt={`QR code for table ${table.name}`} className="size-56 rounded-lg ring-1 ring-slate-200" data-testid="qr-image" />
+          : <div className="size-56 animate-pulse rounded-lg bg-slate-100" aria-hidden />}
+        {svg && (
+          <a href={svg} download={`table-${table.name.replace(/[^\w-]+/g, '_')}-qr.svg`}
+            className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm font-medium text-brand-700 hover:bg-brand-50">
+            <Download className="size-4" aria-hidden /> Download for printing (SVG)
+          </a>
+        )}
+      </div>
       <p className="mt-3 break-all rounded-lg bg-slate-50 p-3 font-mono text-sm text-slate-800 ring-1 ring-slate-200" data-testid="qr-url">{url}</p>
       <ErrorBanner error={regenerate.error} />
     </Modal>
   )
+}
+
+function useQrSvg(text: string) {
+  const [result, setResult] = useState<{ text: string; svg: string } | null>(null)
+  useEffect(() => {
+    let active = true
+    void QRCode.toString(text, { type: 'svg', errorCorrectionLevel: 'M', margin: 2 }).then((svg) => {
+      if (active) setResult({ text, svg: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}` })
+    })
+    return () => { active = false }
+  }, [text])
+  return result?.text === text ? result.svg : null
 }
