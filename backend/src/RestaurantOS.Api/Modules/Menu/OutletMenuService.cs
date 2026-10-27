@@ -28,6 +28,8 @@ public sealed class OutletMenuService(AppDbContext db)
                 i.FoodType,
                 i.Station,
                 price = data.EffectivePrice(i),
+                basePrice = i.Price,
+                priceOverride = data.Overrides.TryGetValue(i.Id, out var ov) ? ov.PriceOverride : null,
                 isAvailable = data.IsAvailable(i.Id),
                 taxRate = i.TaxGroupId is { } tg && data.TaxGroups.TryGetValue(tg, out var g) ? g.TotalRate : 0m,
                 variants = i.Variants.Where(v => v.IsActive).OrderBy(v => v.SortOrder).Select(v => new { v.Id, v.Name, v.Price }),
