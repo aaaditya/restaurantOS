@@ -2,6 +2,56 @@
 
 Newest entries first. Record only what was actually run; include the command and the result.
 
+## 2026-10-27 — Phase 7: production hardening
+
+### Completed
+
+- API: forwarded headers trusted only from configured proxies/networks (rate limits partition by the
+  real client IP), HSTS outside Development, JSON console logs with UTC timestamps and correlation-id
+  scopes, OpenTelemetry traces and metrics over OTLP when `OTEL_EXPORTER_OTLP_ENDPOINT` is set, and a
+  startup refusal when mock simulators are enabled in Production.
+- Web: route-level code splitting; nginx serves a strict CSP and security headers on every static
+  response, forwards client IPs on the SignalR route, gzip, no server tokens.
+- Tables: printable QR code images (SVG download) for each table's ordering link.
+- Fix found by the full e2e run: in the purchase order dialog, finishing "Mark as ordered" reset a
+  receive form opened meanwhile, losing entered quantities. Other actions are now disabled while one
+  is in flight and only receipt returns the dialog to view mode.
+- `docs/OPERATIONS.md`: configuration reference, health, backup policy, restore and verification
+  steps, incident notes. Compose passes the trusted proxy network and allows a Staging demo mode.
+
+### Verified (commands run in the agent VM, PostgreSQL 16 local)
+
+| Check | Result |
+| --- | --- |
+| `dotnet build -warnaserror` | 0 warnings, 0 errors |
+| Unit / integration tests | 35/35 and 40/40 passed |
+| `npm run lint` / `npm run build` | 0 errors (7 existing warnings) / passed; initial JS 341 kB (was 613 kB), no chunk-size warning |
+| `npx playwright test` (Vite dev server) | 7/7 passed; inventory spec now also asserts actions are disabled while a status change is in flight; QR spec decodes the rendered QR image and checks it encodes the table link |
+| Playwright 7/7 against the production bundle behind local nginx 1.24 using `frontend/deploy/nginx.conf` and the API in Staging (JSON logs, trusted proxy 127.0.0.1) | 7/7 passed; a page sweep logged no console errors or CSP violations |
+| API with `ASPNETCORE_ENVIRONMENT=Production` and simulators enabled | refused to start with the intended message |
+| OTLP export to a local OTLP/HTTP receiver | `/v1/traces` and `/v1/metrics` received with service `restaurantos-api` |
+| `pg_dump -Fc` then `pg_restore` into a new database | row counts matched for every table checked (tenants, orders, payments, settlements, stock ledger, audit logs, payment intents, inbound events); migration history intact |
+
+### Not yet verified
+
+- Docker images and compose (no Docker daemon in the agent VM).
+
+### Remaining work
+
+Offline-tolerant POS, thermal printing and e-invoicing are planned post-MVP items. Real payment,
+billing and delivery-partner adapters wait on provider choice and credentials.
+
+### Blockers
+
+Owner decisions and credentials needed for: payment gateway (for example Razorpay, Cashfree or
+PayU), SaaS billing provider, delivery-partner API access, GST e-invoicing provider. Public
+deployment needs owner approval and hosting choice.
+
+### Next concrete action
+
+Final MVP audit; then post-MVP items (offline POS queue, ESC/POS print bridge) unless the owner
+supplies provider credentials.
+
 ## 2026-10-27 — Phase 6: subscriptions, API keys, partner orders, online payments
 
 ### Completed
