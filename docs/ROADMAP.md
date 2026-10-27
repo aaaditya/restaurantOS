@@ -14,48 +14,48 @@ Legend: `[x]` done and verified, `[~]` partially done, `[ ]` not started.
 
 ## Phase 0 — Foundation
 
-- [ ] Repository layout (`backend/`, `frontend/`, `docs/`, `deploy/`)
-- [ ] ASP.NET Core 10 Web API host with ProblemDetails, OpenAPI, health checks
-- [ ] PostgreSQL via EF Core 10 + Npgsql, migrations, snake_case naming
-- [ ] React 19 + TypeScript + Vite + Tailwind shell
-- [ ] Docker Compose (postgres, api, web)
-- [ ] GitHub Actions CI (backend build+tests against Postgres service, frontend lint/build, Playwright)
-- [ ] Developer documentation (`README.md`, `docs/DEVELOPMENT.md`)
+- [x] Repository layout (`backend/`, `frontend/`, `docs/`, `.github/`)
+- [x] ASP.NET Core 10 Web API host with ProblemDetails, OpenAPI, health checks
+- [x] PostgreSQL via EF Core 10 + Npgsql, migrations, snake_case naming
+- [x] React 19 + TypeScript + Vite + Tailwind shell
+- [~] Docker Compose (postgres, api, web)
+- [~] GitHub Actions CI (backend build+tests against Postgres service, frontend lint/build, Playwright)
+- [x] Developer documentation (`README.md`, `docs/DEVELOPMENT.md`)
 
 Acceptance: `dotnet test` passes, `npm run build` passes, `/health` returns healthy against Postgres.
 
 ## Phase 1 — Tenancy, authentication, staff roles
 
-- [ ] Self-serve signup creates tenant + owner + first outlet (trial subscription)
-- [ ] JWT access tokens + rotating refresh tokens, password hashing (PBKDF2 via ASP.NET Identity hasher)
-- [ ] Roles (Owner, Manager, Cashier, Waiter, Kitchen) and permission matrix
-- [ ] Tenant isolation via EF global query filters + SaveChanges guard
-- [ ] Outlet-level authorization on every outlet route
-- [ ] Staff management (invite/create, assign roles per outlet, deactivate)
-- [ ] Audit log for security-sensitive actions
+- [x] Self-serve signup creates tenant + owner + first outlet (trial subscription)
+- [x] JWT access tokens + rotating refresh tokens, password hashing (PBKDF2 via ASP.NET Identity hasher)
+- [x] Roles (Owner, Manager, Cashier, Waiter, Kitchen) and permission matrix
+- [x] Tenant isolation via EF global query filters + SaveChanges guard
+- [x] Outlet-level authorization on every outlet route
+- [x] Staff management (invite/create, assign roles per outlet, deactivate)
+- [x] Audit log for security-sensitive actions
 
 Acceptance: integration tests prove tenant A cannot read/write tenant B data and that outlet
 assignment restricts access.
 
 ## Phase 2 — Menu and POS ordering
 
-- [ ] Tax groups with components (e.g. CGST/SGST), inclusive/exclusive pricing per outlet
-- [ ] Categories, items, variants, modifier groups (min/max), food type, kitchen station
-- [ ] Outlet availability overrides (in stock / out of stock, price override)
-- [ ] Tables and areas
-- [ ] Orders: dine-in, takeaway, delivery; pricing snapshots on each line
-- [ ] Order discounts (percent/flat) with permission + reason, audited
-- [ ] Deterministic bill calculator (unit tested)
-- [ ] Optimistic concurrency on orders, client-generated idempotent order creation
+- [x] Tax groups with components (e.g. CGST/SGST), inclusive/exclusive pricing per outlet
+- [x] Categories, items, variants, modifier groups (min/max), food type, kitchen station
+- [x] Outlet availability overrides (in stock / out of stock, price override)
+- [x] Tables and areas
+- [x] Orders: dine-in, takeaway, delivery; pricing snapshots on each line
+- [x] Order discounts (percent/flat) with permission + reason, audited
+- [x] Deterministic bill calculator (unit tested)
+- [x] Optimistic concurrency on orders, client-generated idempotent order creation
 
 ## Phase 3 — Kitchen and payments
 
-- [ ] KOT generation per station when items are sent; KOT numbering per outlet per day
-- [ ] Live kitchen display (SignalR) with status flow New → Preparing → Ready → Served
-- [ ] Line void after KOT (permission + reason), cancellation KOT
-- [ ] Atomic settlement: split payments, idempotency key, sequential invoice number per outlet per financial year
-- [ ] Printable invoice / KOT views
-- [ ] Cash sessions (shift open/close, expected vs counted)
+- [x] KOT generation per station when items are sent; KOT numbering per outlet per day
+- [x] Live kitchen display (SignalR) with status flow New → Preparing → Ready → Served
+- [x] Line void after KOT (permission + reason), cancellation KOT
+- [x] Atomic settlement: split payments, idempotency key, sequential invoice number per outlet per financial year
+- [x] Printable invoice view (KOTs shown on the kitchen display; ticket printing is Phase 7)
+- [x] Cash sessions (shift open/close, expected vs counted)
 
 Acceptance: Playwright test drives POS → KOT on kitchen display → settle → invoice.
 
@@ -79,7 +79,7 @@ Acceptance: Playwright test drives POS → KOT on kitchen display → settle →
 
 ## Phase 6 — Subscriptions and integrations
 
-- [ ] Plan catalog (Starter / Growth / Scale) with outlet and staff limits enforced
+- [x] Plan catalog (Starter / Growth / Scale) with outlet and staff limits enforced
 - [ ] Subscription status (trial/active/past-due/cancelled), mock billing provider
 - [ ] Tenant API keys (hashed, scoped) for authorized external integrations
 - [ ] Delivery-aggregator webhook with HMAC signature and idempotent ingestion (mock adapter)
@@ -87,9 +87,9 @@ Acceptance: Playwright test drives POS → KOT on kitchen display → settle →
 
 ## Phase 7 — Production hardening
 
-- [ ] Rate limiting on auth/public endpoints
-- [ ] Security headers, CORS allow-list, structured logging, correlation IDs
-- [ ] Dockerfiles (multi-stage) and compose for local/prod-like runs
+- [x] Rate limiting on auth/public endpoints
+- [~] Security headers, CORS allow-list, structured logging, correlation IDs
+- [~] Dockerfiles (multi-stage) and compose for local/prod-like runs
 - [ ] Backups/restore runbook (documented, not automated)
 - [ ] Observability exporters (OpenTelemetry) — planned
 - [ ] Offline-tolerant POS (queued writes) — planned

@@ -3,7 +3,7 @@
 Status: Accepted (2026-10-27)
 
 ## Decision
-1. Money is `decimal`, stored as `numeric(18,2)`. Rates/quantities are `numeric(18,4)`. No floats.
+1. Money is `decimal`, stored as `numeric(18,4)` (one column precision for money, rates and quantities). Amounts are rounded to 2 decimals in the domain (`Money.Round`, half away from zero) before they are persisted, so stored money values always have at most 2 decimals. No floats.
 2. Rounding mode is `MidpointRounding.AwayFromZero`, applied at 2 dp.
 3. Line gross = round(unit price incl. modifiers × qty).
 4. Order discount (percent or flat) is allocated to lines **before tax**:
