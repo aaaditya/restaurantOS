@@ -1,59 +1,47 @@
+import type { ComponentType } from 'react'
 import type { RouteObject } from 'react-router'
+import { Spinner } from './components/ui'
 import { LoginPage, SignupPage } from './features/auth/AuthPages'
-import { KitchenPage } from './features/kitchen/KitchenPage'
 import { AppLayout, HomeRedirect, RequireAuth } from './features/layout/AppLayout'
-import { InvoicePage } from './features/orders/InvoicePage'
-import { OrdersPage } from './features/orders/OrdersPage'
-import { OrderScreen } from './features/pos/OrderScreen'
-import { PosHome } from './features/pos/PosHome'
 import { NotFound } from './features/layout/NotFound'
-import { CashPage } from './features/cash/CashPage'
-import { InventoryPage } from './features/inventory/InventoryPage'
-import { MenuPage } from './features/menu/MenuPage'
-import { PurchasingPage } from './features/purchasing/PurchasingPage'
-import { SettingsPage } from './features/settings/SettingsPage'
-import { StaffPage } from './features/staff/StaffPage'
-import { TablesPage } from './features/tables/TablesPage'
-import { AuditPage } from './features/audit/AuditPage'
-import { CustomersPage } from './features/customers/CustomersPage'
-import { DashboardPage } from './features/dashboard/DashboardPage'
-import { GuestOrderPage } from './features/qr/GuestOrderPage'
-import { ReportsPage } from './features/reports/ReportsPage'
-import { BillingPage } from './features/billing/BillingPage'
-import { IntegrationsPage } from './features/integrations/IntegrationsPage'
-import { MockCheckoutPage } from './features/payments/MockCheckoutPage'
+
+/** Loads a page module on first visit so the initial bundle only carries the shell. */
+const page = <M,>(load: () => Promise<M>, pick: (m: M) => ComponentType) => async () => ({ Component: pick(await load()) })
+
+const fallback = <Spinner label="Loading…" />
 
 export const router: RouteObject[] = [
   { path: '/login', element: <LoginPage /> },
   { path: '/signup', element: <SignupPage /> },
-  { path: '/qr/:token', element: <GuestOrderPage /> },
-  { path: '/pay/mock/:providerRef', element: <MockCheckoutPage /> },
+  { path: '/qr/:token', hydrateFallbackElement: fallback, lazy: page(() => import('./features/qr/GuestOrderPage'), (m) => m.GuestOrderPage) },
+  { path: '/pay/mock/:providerRef', hydrateFallbackElement: fallback, lazy: page(() => import('./features/payments/MockCheckoutPage'), (m) => m.MockCheckoutPage) },
   {
     element: <RequireAuth />,
+    hydrateFallbackElement: fallback,
     children: [
-      { path: '/orders/:orderId/invoice', element: <InvoicePage /> },
+      { path: '/orders/:orderId/invoice', lazy: page(() => import('./features/orders/InvoicePage'), (m) => m.InvoicePage) },
       {
         element: <AppLayout />,
         children: [
           { index: true, element: <HomeRedirect /> },
-          { path: '/pos', element: <PosHome /> },
-          { path: '/pos/new', element: <OrderScreen /> },
-          { path: '/pos/orders/:orderId', element: <OrderScreen /> },
-          { path: '/orders', element: <OrdersPage /> },
-          { path: '/kitchen', element: <KitchenPage /> },
-          { path: '/cash', element: <CashPage /> },
-          { path: '/menu', element: <MenuPage /> },
-          { path: '/tables', element: <TablesPage /> },
-          { path: '/staff', element: <StaffPage /> },
-          { path: '/inventory', element: <InventoryPage /> },
-          { path: '/purchasing', element: <PurchasingPage /> },
-          { path: '/settings', element: <SettingsPage /> },
-          { path: '/dashboard', element: <DashboardPage /> },
-          { path: '/customers', element: <CustomersPage /> },
-          { path: '/reports', element: <ReportsPage /> },
-          { path: '/audit', element: <AuditPage /> },
-          { path: '/billing', element: <BillingPage /> },
-          { path: '/integrations', element: <IntegrationsPage /> },
+          { path: '/pos', lazy: page(() => import('./features/pos/PosHome'), (m) => m.PosHome) },
+          { path: '/pos/new', lazy: page(() => import('./features/pos/OrderScreen'), (m) => m.OrderScreen) },
+          { path: '/pos/orders/:orderId', lazy: page(() => import('./features/pos/OrderScreen'), (m) => m.OrderScreen) },
+          { path: '/orders', lazy: page(() => import('./features/orders/OrdersPage'), (m) => m.OrdersPage) },
+          { path: '/kitchen', lazy: page(() => import('./features/kitchen/KitchenPage'), (m) => m.KitchenPage) },
+          { path: '/cash', lazy: page(() => import('./features/cash/CashPage'), (m) => m.CashPage) },
+          { path: '/menu', lazy: page(() => import('./features/menu/MenuPage'), (m) => m.MenuPage) },
+          { path: '/tables', lazy: page(() => import('./features/tables/TablesPage'), (m) => m.TablesPage) },
+          { path: '/staff', lazy: page(() => import('./features/staff/StaffPage'), (m) => m.StaffPage) },
+          { path: '/inventory', lazy: page(() => import('./features/inventory/InventoryPage'), (m) => m.InventoryPage) },
+          { path: '/purchasing', lazy: page(() => import('./features/purchasing/PurchasingPage'), (m) => m.PurchasingPage) },
+          { path: '/settings', lazy: page(() => import('./features/settings/SettingsPage'), (m) => m.SettingsPage) },
+          { path: '/dashboard', lazy: page(() => import('./features/dashboard/DashboardPage'), (m) => m.DashboardPage) },
+          { path: '/customers', lazy: page(() => import('./features/customers/CustomersPage'), (m) => m.CustomersPage) },
+          { path: '/reports', lazy: page(() => import('./features/reports/ReportsPage'), (m) => m.ReportsPage) },
+          { path: '/audit', lazy: page(() => import('./features/audit/AuditPage'), (m) => m.AuditPage) },
+          { path: '/billing', lazy: page(() => import('./features/billing/BillingPage'), (m) => m.BillingPage) },
+          { path: '/integrations', lazy: page(() => import('./features/integrations/IntegrationsPage'), (m) => m.IntegrationsPage) },
           { path: '*', element: <NotFound /> },
         ],
       },
