@@ -19,7 +19,7 @@ Legend: `[x]` done and verified, `[~]` partially done, `[ ]` not started.
 - [x] PostgreSQL via EF Core 10 + Npgsql, migrations, snake_case naming
 - [x] React 19 + TypeScript + Vite + Tailwind shell
 - [~] Docker Compose (postgres, api, web)
-- [~] GitHub Actions CI (backend build+tests against Postgres service, frontend lint/build, Playwright)
+- [x] GitHub Actions CI (backend build+tests against Postgres service, frontend lint/build, Playwright)
 - [x] Developer documentation (`README.md`, `docs/DEVELOPMENT.md`)
 
 Acceptance: `dotnet test` passes, `npm run build` passes, `/health` returns healthy against Postgres.
@@ -61,12 +61,12 @@ Acceptance: Playwright test drives POS → KOT on kitchen display → settle →
 
 ## Phase 4 — Inventory and procurement
 
-- [ ] Raw materials with units and reorder levels
-- [ ] Append-only stock ledger with unique source references (no duplicate effects)
-- [ ] Recipes per item/variant; consumption posted on settlement
-- [ ] Suppliers, purchase orders, goods receipt into stock
-- [ ] Wastage and manual adjustments (audited)
-- [ ] Low-stock report
+- [x] Raw materials with units and reorder levels
+- [x] Append-only stock ledger with unique source references (no duplicate effects)
+- [x] Recipes per item/variant; consumption posted on settlement
+- [x] Suppliers, purchase orders, goods receipt into stock
+- [x] Wastage and manual adjustments (audited)
+- [x] Low-stock report
 
 ## Phase 5 — CRM, loyalty, QR ordering, reports
 

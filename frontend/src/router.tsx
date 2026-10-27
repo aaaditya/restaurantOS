@@ -8,7 +8,9 @@ import { OrderScreen } from './features/pos/OrderScreen'
 import { PosHome } from './features/pos/PosHome'
 import { NotFound } from './features/layout/NotFound'
 import { CashPage } from './features/cash/CashPage'
+import { InventoryPage } from './features/inventory/InventoryPage'
 import { MenuPage } from './features/menu/MenuPage'
+import { PurchasingPage } from './features/purchasing/PurchasingPage'
 import { SettingsPage } from './features/settings/SettingsPage'
 import { StaffPage } from './features/staff/StaffPage'
 import { TablesPage } from './features/tables/TablesPage'
@@ -33,6 +35,8 @@ export const router: RouteObject[] = [
           { path: '/menu', element: <MenuPage /> },
           { path: '/tables', element: <TablesPage /> },
           { path: '/staff', element: <StaffPage /> },
+          { path: '/inventory', element: <InventoryPage /> },
+          { path: '/purchasing', element: <PurchasingPage /> },
           { path: '/settings', element: <SettingsPage /> },
           { path: '*', element: <NotFound /> },
         ],

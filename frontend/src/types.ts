@@ -101,3 +101,42 @@ export type CashSession = {
   id: string; status: 'Open' | 'Closed'; openingFloat: number; expectedCash: number; countedCash: number | null; variance: number | null
   openedAt: string; closedAt: string | null; notes: string | null
 }
+
+export type StockUnit = 'Gram' | 'Kilogram' | 'Millilitre' | 'Litre' | 'Piece'
+export const STOCK_UNITS: { value: StockUnit; label: string; short: string }[] = [
+  { value: 'Kilogram', label: 'Kilogram', short: 'kg' }, { value: 'Gram', label: 'Gram', short: 'g' },
+  { value: 'Litre', label: 'Litre', short: 'L' }, { value: 'Millilitre', label: 'Millilitre', short: 'ml' },
+  { value: 'Piece', label: 'Piece', short: 'pc' },
+]
+
+export type InventoryItem = { id: string; name: string; sku: string | null; unit: StockUnit; reorderLevel: number; costPerUnit: number; isActive: boolean }
+
+export type StockRow = {
+  inventoryItemId: string; name: string; sku: string | null; unit: StockUnit; reorderLevel: number; costPerUnit: number
+  quantity: number; value: number; isLow: boolean; updatedAt: string | null
+}
+export type StockReport = { items: StockRow[]; totalValue: number; lowCount: number }
+
+export type MovementType = 'Opening' | 'Purchase' | 'Consumption' | 'Wastage' | 'Adjustment' | 'ConsumptionReversal'
+export type LedgerEntry = {
+  id: string; inventoryItemId: string; itemName: string; unit: StockUnit; type: MovementType; quantity: number; unitCost: number
+  balanceAfter: number; sourceType: string; sourceId: string; notes: string | null; createdAt: string
+}
+
+export type Recipe = { id: string; menuItemId: string; variantId: string | null; lines: { id: string; inventoryItemId: string; quantity: number }[] }
+
+export type Supplier = {
+  id: string; name: string; contactName: string | null; phone: string | null; email: string | null; gstin: string | null
+  address: string | null; isActive: boolean
+}
+
+export type PoStatus = 'Draft' | 'Ordered' | 'Received' | 'Cancelled'
+export type PurchaseOrderSummary = {
+  id: string; number: number; status: PoStatus; supplierId: string; supplierName: string; total: number; createdAt: string
+  orderedAt: string | null; receivedAt: string | null; lineCount: number
+}
+export type PurchaseOrder = {
+  id: string; outletId: string; number: number; status: PoStatus; supplierId: string; supplierName: string | null; notes: string | null
+  total: number; createdAt: string; orderedAt: string | null; receivedAt: string | null
+  lines: { id: string; inventoryItemId: string; itemName: string | null; unit: StockUnit | null; quantity: number; unitCost: number; receivedQuantity: number | null; amount: number }[]
+}

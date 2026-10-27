@@ -34,7 +34,7 @@ export function useNavItems() {
 }
 
 /** Routes that are implemented; extended as modules ship. */
-export const ENABLED_ROUTES = new Set<string>(['/pos', '/orders', '/kitchen', '/cash', '/menu', '/tables', '/staff', '/settings'])
+export const ENABLED_ROUTES = new Set<string>(['/pos', '/orders', '/kitchen', '/cash', '/menu', '/tables', '/inventory', '/purchasing', '/staff', '/settings'])
 
 export function RequireAuth() {
   const { isAuthenticated, isLoading, me } = useSession()
