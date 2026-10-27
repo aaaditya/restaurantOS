@@ -139,12 +139,13 @@ function PendingOrders({ orders }: { orders: OrderSummary[] }) {
               <Link to={`/pos/orders/${o.id}`}><Button variant="ghost" size="sm">View</Button></Link>
               {can('OrderCancel') && <Button variant="secondary" size="sm" onClick={() => { setReason(''); setRejecting(o) }}><X className="size-4" /> Reject</Button>}
               <Button variant="success" size="sm" loading={accept.isPending && accept.variables?.id === o.id}
-                onClick={() => accept.mutate(o, {
-                  onSuccess: (result) => toast(result.id === o.id
+                // mutateAsync rather than per-call callbacks: the card unmounts once the list refreshes, before mutate's callbacks would run.
+                onClick={() => void accept.mutateAsync(o).then(
+                  (result) => toast(result.id === o.id
                     ? `Order #${o.orderNumber} accepted and sent to kitchen`
                     : `Items from #${o.orderNumber} added to running order #${result.orderNumber} and sent to kitchen`),
-                  onError: (e) => toast(errorMessage(e), 'error'),
-                })}>
+                  (e: unknown) => toast(errorMessage(e), 'error'),
+                )}>
                 <Check className="size-4" /> Accept
               </Button>
             </div>
@@ -155,7 +156,7 @@ function PendingOrders({ orders }: { orders: OrderSummary[] }) {
         footer={<>
           <Button variant="secondary" onClick={() => setRejecting(null)}>Back</Button>
           <Button variant="danger" disabled={!reason.trim()} loading={reject.isPending}
-            onClick={() => rejecting && reject.mutate(rejecting, { onSuccess: () => setRejecting(null), onError: (e) => toast(errorMessage(e), 'error') })}>
+            onClick={() => rejecting && void reject.mutateAsync(rejecting).then(() => setRejecting(null), (e: unknown) => toast(errorMessage(e), 'error'))}>
             Reject
           </Button>
         </>}>

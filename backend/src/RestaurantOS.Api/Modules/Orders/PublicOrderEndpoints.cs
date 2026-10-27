@@ -101,7 +101,8 @@ public static class PublicOrderEndpoints
         o.TableName,
         grandTotal = o.Status == OrderStatus.Cancelled ? (decimal?)null : o.GrandTotal,
         o.CreatedAt,
-        lines = o.Lines.Where(l => l.Status != OrderLineStatus.Voided || o.Status == OrderStatus.Cancelled).Select(l => new
+        lines = o.Lines.Where(l => l.Status != OrderLineStatus.Voided || o.Status == OrderStatus.Cancelled)
+            .OrderBy(l => l.CreatedAt).ThenBy(l => l.Id).Select(l => new
         {
             l.ItemName, l.VariantName, l.Quantity, l.UnitPrice, modifiers = l.Modifiers.Select(m => m.Name), l.Notes,
         }),

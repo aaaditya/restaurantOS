@@ -15,6 +15,10 @@ export async function signup(page: Page, email = uniqueEmail('owner')) {
   await page.getByLabel('Work email').fill(email)
   await page.getByLabel('Password').fill(PASSWORD)
   await page.getByRole('button', { name: 'Create account' }).click()
+  // Owners land on the dashboard; specs start from the POS.
+  await expect(page).toHaveURL(/\/dashboard$/)
+  await expect(page.getByTestId('dash-orders')).toHaveText('0')
+  await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'POS' }).click()
   await expect(page).toHaveURL(/\/pos$/)
   return email
 }

@@ -77,11 +77,12 @@ export function Checkbox({ label, checked, onChange, disabled }: { label: string
 }
 
 export function Card({ children, className, title, actions }: { children: ReactNode; className?: string; title?: string; actions?: ReactNode }) {
+  const headingId = useId()
   return (
-    <section className={clsx('rounded-xl bg-white shadow-sm ring-1 ring-slate-200', className)}>
+    <section className={clsx('rounded-xl bg-white shadow-sm ring-1 ring-slate-200', className)} aria-labelledby={title ? headingId : undefined}>
       {(title || actions) && (
         <header className="flex items-center justify-between gap-2 border-b border-slate-100 px-4 py-3">
-          {title && <h2 className="text-sm font-semibold text-slate-900">{title}</h2>}
+          {title && <h2 id={headingId} className="text-sm font-semibold text-slate-900">{title}</h2>}
           {actions}
         </header>
       )}
