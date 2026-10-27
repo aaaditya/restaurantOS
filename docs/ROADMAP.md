@@ -81,10 +81,12 @@ Acceptance: Playwright test drives POS → KOT on kitchen display → settle →
 ## Phase 6 — Subscriptions and integrations
 
 - [x] Plan catalog (Starter / Growth / Scale) with outlet and staff limits enforced
-- [ ] Subscription status (trial/active/past-due/cancelled), mock billing provider
-- [ ] Tenant API keys (hashed, scoped) for authorized external integrations
-- [ ] Delivery-aggregator webhook with HMAC signature and idempotent ingestion (mock adapter)
-- [ ] Payment-gateway abstraction with mock adapter (UPI/online intents)
+- [x] Subscription status (trial/active/past-due/cancelled) enforced on writes; billing page with mock billing provider (subscribe, switch, cancel, resubscribe; audited)
+- [x] Tenant API keys (hashed, scoped, outlet-restrictable, revocable, plan-gated) for authorized external integrations
+- [x] External order ingestion API (API key + scope), idempotent by provider/external id, partner orders await acceptance on the POS; mock delivery-partner simulator
+- [x] Payment-gateway abstraction with mock adapter: payment links (intents) per order, HMAC-signed and deduplicated webhooks, settlement requires a confirmed intent; test checkout page
+
+Acceptance: Playwright test upgrades the plan, creates an API key, pushes a partner order (with retry), accepts it, settles it through a payment link paid on the test checkout, revokes the key, cancels and resubscribes.
 
 ## Phase 7 — Production hardening
 

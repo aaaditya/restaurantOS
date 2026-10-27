@@ -39,13 +39,13 @@ no message bus. Real-time fan-out to POS and kitchen screens uses SignalR groups
 | `Tables` | Dining areas/tables, QR tokens |
 | `Orders` | Order lifecycle, discounts, pricing snapshots |
 | `Kitchen` | KOTs and kitchen display state |
-| `Payments` | Settlement, payments, invoices, cash sessions, gateway abstraction |
+| `Payments` | Settlement, payments, invoices, cash sessions, payment intents and gateway webhooks |
 | `Inventory` | Raw materials, stock ledger, recipes, suppliers, purchase orders, wastage |
 | `Customers` | Customers, loyalty ledger |
 | `Reports` | Read-only reporting queries |
 | `Audit` | Audit log write/read |
-| `Billing` | Subscription plans and limits, mock billing provider |
-| `Integrations` | API keys, aggregator webhooks (mock adapter) |
+| `Billing` | Subscription plans and limits, billing provider abstraction (mock) |
+| `Integrations` | API keys, external order API, mock delivery-partner simulator |
 | `Public` | Anonymous QR ordering endpoints |
 
 Each module exposes `MapXxxEndpoints(this IEndpointRouteBuilder)` and registers its services in
@@ -116,11 +116,29 @@ service** (e.g. settlement calls `InventoryService.PostConsumptionAsync`).
 - The dashboard and audit log include only outlets where the caller's roles grant `ReportsView` or
   `AuditView`; outlet-level auditors never see tenant-wide entries.
 
+## Integrations, payments and billing (ADR-0006)
+
+- Partners call `/api/v1/outlets/{outletId}/menu` and `/orders` with an `X-Api-Key` header. The key's
+  hash is looked up with all tenant filters off, compared in fixed time, then the tenant context is set
+  from the key; scopes and an optional outlet restriction are checked per endpoint. Keys need a plan
+  with integrations and are audited on create and revoke.
+- Partner orders are idempotent per tenant + provider + external id (inbound event row with a unique
+  key, deterministic `clientOrderId`), use menu prices, and wait in `AwaitingAcceptance`
+  (`externalOrderPlaced` event). `GET …/orders/{provider}/{externalId}` reports pending, accepted,
+  completed or rejected.
+- Online payments: staff create a payment intent for an amount; the gateway's webhook (HMAC-SHA256
+  over the raw body) moves it to succeeded or failed exactly once (row lock + event dedup). Settling with
+  method `Online` requires a succeeded intent for that order and amount.
+- Billing: `GET /api/billing` returns plan, status, usage and catalog; `POST /api/billing/subscription`
+  and `/cancel` go through `IBillingProvider` (mock in all environments until a provider is chosen).
+- Simulators (`/api/dev/mock-aggregator`, `/api/dev/mock-payments`, the `/pay/mock/:ref` page) exist only
+  when `Integrations:EnableMockSimulators` is true.
+
 ## Real-time
 
 `/hubs/outlet` (SignalR). Clients call `JoinOutlet(outletId)`; the hub verifies access and adds the
 connection to group `outlet:{id}`. Server events: `kotChanged`, `orderChanged`, `qrOrderPlaced`,
-`stockChanged`. Payloads are small; clients refetch via HTTP for full state.
+`externalOrderPlaced`, `paymentIntentChanged`, `stockChanged`. Payloads are small; clients refetch via HTTP for full state.
 
 ## Frontend
 

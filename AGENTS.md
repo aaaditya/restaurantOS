@@ -53,3 +53,8 @@ npx playwright test   # starts the API on :5080 (database restaurantos_e2e) and 
 - `Card` titles are accessible region names; Playwright can scope with `getByRole('region', { name })`.
 - Do not rely on per-call `mutate(vars, { onSuccess })` when the calling component may unmount as a
   result (for example, list items); use `mutateAsync(...).then(...)`.
+- New tenants start on the Starter trial (1 outlet, no integrations). Tests that need more outlets or
+  API keys upgrade first (`POST /api/billing/subscription` or `WithDbAsync` setting `PlanCode`).
+- Mock simulators (`/api/dev/*`, `/pay/mock/:ref`) and the mock payment webhook secret are enabled only
+  in `appsettings.Development.json` and tests. Never enable them in production config.
+- New pages must be added to `router.tsx`, `NAV` and `ENABLED_ROUTES` in `AppLayout.tsx`.

@@ -9,6 +9,8 @@ alwaysApply: true
   and an explicit `Permission`. Cross-tenant access returns 404.
 - Financial/stock writes are transactional + idempotent; stock ledger is append-only.
 - Audit sensitive actions. Use mock adapters for third-party integrations without credentials.
+- External inputs (API keys, provider webhooks) are verified in fixed time and deduplicated by
+  provider event/external id before any order or payment effect (ADR-0006).
 - Verify with `dotnet test`, frontend `npm run lint && npm run build`, and Playwright for UI flows.
   Record real results in `docs/PROGRESS.md`; never claim unverified success.
 - No secrets, no real customer data, no proprietary vendor code/branding, no deployments without approval.

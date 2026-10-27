@@ -57,7 +57,8 @@ public sealed class MockPaymentGateway(AppDbContext db, RequestTenantContext ten
     /// <summary>Verifies the signature, then applies the event once. Returns false when the signature is invalid.</summary>
     public async Task<bool> HandleWebhookAsync(string body, string? signature, CancellationToken ct)
     {
-        if (Secret.Length == 0) throw new InvalidOperationException("Mock payment webhooks are not configured.");
+        // Without a configured secret no signature can be valid, so every event is rejected.
+        if (Secret.Length == 0) return false;
         var expected = Encoding.ASCII.GetBytes(Sign(Secret, body));
         if (signature is null || !CryptographicOperations.FixedTimeEquals(expected, Encoding.ASCII.GetBytes(signature))) return false;
 
