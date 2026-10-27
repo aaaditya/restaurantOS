@@ -1,13 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Plus, Trash2 } from 'lucide-react'
+import { ExternalLink, Link2, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { api, newId } from '../../app/api'
-import { Button, ErrorBanner, Modal } from '../../components/ui'
+import { Badge, Button, ErrorBanner, Modal } from '../../components/ui'
 import { money, paymentLabel } from '../../lib/format'
-import type { CustomerDetail, Order, Outlet, PaymentMethod, SettlementResult } from '../../types'
+import type { CustomerDetail, Order, Outlet, PaymentIntent, PaymentMethod, SettlementResult } from '../../types'
 
 type Row = { key: string; method: PaymentMethod; amount: string; tendered: string; reference: string }
 const METHODS: PaymentMethod[] = ['Cash', 'Upi', 'Card', 'Wallet']
+const LINK_METHOD = { method: 'Online' as PaymentMethod, label: 'Online payment link' }
 
 const round2 = (n: number) => Math.round(n * 100) / 100
 
@@ -36,8 +37,18 @@ export function SettleDialog({ order, onClose, onSettled }: {
   const loyaltyMax = pointValue > 0 ? Math.min(Math.floor(points * pointValue * 100) / 100, order.grandTotal) : 0
   const loyaltyUsed = round2(rows.filter((r) => r.method === 'Loyalty').reduce((s, r) => s + (Number(r.amount) || 0), 0))
   const loyaltyOver = loyaltyUsed > loyaltyMax
+  const intents = useQuery({
+    queryKey: ['payment-intents', order.id],
+    queryFn: () => api<PaymentIntent[]>(`/api/outlets/${order.outletId}/orders/${order.id}/payment-intents`),
+    enabled: rows.some((r) => r.method === 'Online'),
+    // Confirmation arrives by provider webhook, so poll while a link is awaiting payment.
+    refetchInterval: (q) => (q.state.data?.some((i) => i.status === 'Pending') ? 2000 : false),
+  })
+  const intentFor = (r: Row) => intents.data?.find((i) => i.id === r.reference)
+  const onlineUnconfirmed = rows.some((r) => r.method === 'Online' && Number(r.amount) > 0 && intentFor(r)?.status !== 'Succeeded')
   const methods = [
     ...METHODS.map((m) => ({ method: m, label: paymentLabel[m] })),
+    LINK_METHOD,
     ...(loyaltyMax > 0 ? [{ method: 'Loyalty' as PaymentMethod, label: `Loyalty points (up to ${money(loyaltyMax)})` }] : []),
   ]
 
@@ -73,7 +84,7 @@ export function SettleDialog({ order, onClose, onSettled }: {
     <Modal open onClose={onClose} title={`Settle order #${order.orderNumber}`} size="md"
       footer={<>
         <Button variant="secondary" onClick={onClose}>Cancel</Button>
-        <Button variant="success" disabled={remaining !== 0 || loyaltyOver} loading={settle.isPending} onClick={() => settle.mutate()}>
+        <Button variant="success" disabled={remaining !== 0 || loyaltyOver || onlineUnconfirmed} loading={settle.isPending} onClick={() => settle.mutate()}>
           Settle {money(order.grandTotal)}
         </Button>
       </>}>
@@ -98,14 +109,15 @@ export function SettleDialog({ order, onClose, onSettled }: {
               <label className="text-sm">
                 <span className="mb-1 block font-medium text-slate-700">Method</span>
                 <select className="w-full rounded-lg border-slate-300 text-sm" value={r.method} aria-label={`Payment ${i + 1} method`}
-                  onChange={(e) => update(r.key, { method: e.target.value as PaymentMethod })}>
+                  disabled={r.method === 'Online' && !!r.reference}
+                  onChange={(e) => update(r.key, { method: e.target.value as PaymentMethod, reference: '' })}>
                   {methods.map((m) => <option key={m.method} value={m.method}>{m.label}</option>)}
                 </select>
               </label>
               <label className="text-sm">
                 <span className="mb-1 block font-medium text-slate-700">Amount</span>
                 <input type="number" inputMode="decimal" step="0.01" min="0" className="w-full rounded-lg border-slate-300 text-sm"
-                  aria-label={`Payment ${i + 1} amount`} value={r.amount} onChange={(e) => update(r.key, { amount: e.target.value })} />
+                  aria-label={`Payment ${i + 1} amount`} value={r.amount} disabled={r.method === 'Online' && !!r.reference} onChange={(e) => update(r.key, { amount: e.target.value })} />
               </label>
               <Button variant="ghost" size="sm" aria-label="Remove payment" disabled={rows.length === 1}
                 onClick={() => setRows((rs) => rs.filter((x) => x.key !== r.key))}><Trash2 className="size-4" /></Button>
@@ -115,6 +127,11 @@ export function SettleDialog({ order, onClose, onSettled }: {
                   <input type="number" inputMode="decimal" step="0.01" min="0" className="w-full rounded-lg border-slate-300 text-sm"
                     aria-label="Cash received" value={r.tendered} onChange={(e) => update(r.key, { tendered: e.target.value })} />
                 </label>
+              )}
+              {r.method === 'Online' && (
+                <OnlinePayment order={order} amount={round2(Number(r.amount) || 0)} intent={intentFor(r)} linked={!!r.reference}
+                  onCreated={(intent) => { update(r.key, { reference: intent.id }); void intents.refetch() }}
+                  onDiscard={() => update(r.key, { reference: '' })} />
               )}
               {(r.method === 'Card' || r.method === 'Upi' || r.method === 'Wallet') && (
                 <label className="col-span-2 text-sm">
@@ -138,5 +155,56 @@ export function SettleDialog({ order, onClose, onSettled }: {
         </dl>
       </div>
     </Modal>
+  )
+}
+
+function OnlinePayment({ order, amount, intent, linked, onCreated, onDiscard }: {
+  order: Order
+  amount: number
+  intent: PaymentIntent | undefined
+  linked: boolean
+  onCreated: (intent: PaymentIntent) => void
+  onDiscard: () => void
+}) {
+  const create = useMutation({
+    mutationFn: () => api<PaymentIntent>(`/api/outlets/${order.outletId}/orders/${order.id}/payment-intents`, { method: 'POST', body: { amount } }),
+    onSuccess: onCreated,
+  })
+  if (!linked) {
+    return (
+      <div className="col-span-3 space-y-2">
+        <ErrorBanner error={create.error} />
+        <Button size="sm" variant="secondary" disabled={amount <= 0} loading={create.isPending} onClick={() => create.mutate()}>
+          <Link2 className="size-4" /> Create payment link for {money(amount)}
+        </Button>
+      </div>
+    )
+  }
+  if (!intent) return <p className="col-span-3 text-sm text-slate-500">Loading payment status…</p>
+  const href = intent.paymentLink ?? ''
+  const url = href.startsWith('/') ? `${window.location.origin}${href}` : href
+  return (
+    <div className="col-span-3 space-y-2 rounded-lg bg-slate-50 p-3 text-sm" data-testid="online-payment">
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-medium">Payment link · {money(intent.amount)}</span>
+        <Badge tone={intent.status === 'Succeeded' ? 'green' : intent.status === 'Failed' ? 'red' : 'amber'}>
+          {intent.status === 'Succeeded' ? 'Paid' : intent.status === 'Failed' ? 'Failed' : 'Awaiting payment'}
+        </Badge>
+      </div>
+      <input readOnly className="w-full rounded-lg border-slate-300 bg-white text-xs" value={url} aria-label="Payment link"
+        onFocus={(e) => e.currentTarget.select()} />
+      <div className="flex flex-wrap gap-2">
+        {intent.status === 'Pending' && navigator.clipboard && (
+          <Button size="sm" variant="ghost" onClick={() => void navigator.clipboard.writeText(url)}>Copy link</Button>
+        )}
+        {intent.provider === 'mock' && intent.status === 'Pending' && (
+          <a href={href} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm font-medium text-brand-700 hover:bg-brand-50">
+            <ExternalLink className="size-4" aria-hidden /> Open test checkout
+          </a>
+        )}
+        {intent.status === 'Failed' && <Button size="sm" variant="secondary" onClick={onDiscard}>Create a new link</Button>}
+      </div>
+      {intent.provider === 'mock' && <p className="text-xs text-slate-500">Test mode: payments use the built-in mock gateway and no money moves.</p>}
+    </div>
   )
 }

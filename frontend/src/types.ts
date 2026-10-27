@@ -59,7 +59,7 @@ export type Order = {
 }
 
 export type OrderSummary = Pick<Order, 'id' | 'orderNumber' | 'type' | 'source' | 'status' | 'tableId' | 'tableName' | 'customerName'
-  | 'customerPhone' | 'grandTotal' | 'invoiceNumber' | 'createdAt' | 'settledAt' | 'version'> & { itemCount: number; pendingItems: number }
+  | 'customerPhone' | 'grandTotal' | 'invoiceNumber' | 'createdAt' | 'settledAt' | 'version' | 'externalRef'> & { itemCount: number; pendingItems: number }
 
 export type Table = {
   id: string; name: string; area: string; capacity: number; sortOrder: number; isActive: boolean; qrToken: string
@@ -204,4 +204,30 @@ export type GuestOrder = {
   clientOrderId: string; orderNumber: number; state: 'pending' | 'accepted' | 'rejected' | 'completed'; tableName: string | null
   grandTotal: number | null; createdAt: string
   lines: { itemName: string; variantName: string | null; quantity: number; unitPrice: number; modifiers: string[]; notes: string | null }[]
+}
+
+export type Plan = { code: string; name: string; monthlyPrice: number; maxOutlets: number; maxStaff: number; inventory: boolean; integrations: boolean }
+
+export type BillingView = {
+  provider: string
+  current: { planCode: string; status: 'Trialing' | 'Active' | 'PastDue' | 'Cancelled'; trialEndsAt: string | null; currentPeriodEndsAt: string | null; usable: boolean }
+  usage: { outlets: number; staff: number }
+  plans: Plan[]
+}
+
+export type ApiKey = {
+  id: string; name: string; prefix: string; outletId: string | null; scopes: string[]
+  createdAt: string; lastUsedAt: string | null; revokedAt: string | null
+}
+
+export type IntegrationConfig = { mockSimulators: boolean; paymentProvider: string; billingProvider: string; scopes: string[] }
+
+export type PaymentIntent = {
+  id: string; orderId: string; amount: number; provider: string; providerRef: string
+  status: 'Pending' | 'Succeeded' | 'Failed'; paymentLink: string | null; createdAt: string
+}
+
+export type ExternalOrderResult = {
+  orderId: string; orderNumber: number; provider: string; externalId: string; state: string; grandTotal: number
+  totalMatches: boolean; cancelReason: string | null; replayed: boolean
 }

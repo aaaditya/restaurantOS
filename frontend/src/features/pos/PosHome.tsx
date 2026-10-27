@@ -29,7 +29,11 @@ export function PosHome() {
   const state = useOutletRealtime(outletId, {
     orderChanged: [posKeys.tables(outletId), ['orders', outletId]],
     qrOrderPlaced: [posKeys.tables(outletId), ['orders', outletId]],
-  }, (event) => { if (event === 'qrOrderPlaced') toast('New online order received', 'info') })
+    externalOrderPlaced: [['orders', outletId]],
+  }, (event) => {
+    if (event === 'qrOrderPlaced') toast('New QR order received', 'info')
+    if (event === 'externalOrderPlaced') toast('New delivery partner order received', 'info')
+  })
 
   const areas = useMemo(() => {
     const map = new Map<string, NonNullable<typeof tables.data>>()
@@ -115,6 +119,15 @@ export function PosHome() {
   )
 }
 
+function pendingSourceLabel(o: OrderSummary) {
+  if (o.source === 'Qr') return `QR · Table ${o.tableName}`
+  if (o.source === 'Aggregator' && o.externalRef) {
+    const [provider, ...id] = o.externalRef.split(':')
+    return `${provider} · ${orderTypeLabel[o.type]} · ${id.join(':')}`
+  }
+  return `Online ${orderTypeLabel[o.type]}`
+}
+
 function PendingOrders({ orders }: { orders: OrderSummary[] }) {
   const outletId = useOutletId()
   const { can } = useSession()
@@ -132,8 +145,8 @@ function PendingOrders({ orders }: { orders: OrderSummary[] }) {
         {orders.map((o) => (
           <li key={o.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
             <div>
-              <div className="font-medium">#{o.orderNumber} · {o.source === 'Qr' ? `QR · Table ${o.tableName}` : `Online ${orderTypeLabel[o.type]}`}</div>
-              <div className="text-sm text-slate-500">{o.itemCount} items · {money(o.grandTotal)} · {o.customerName ?? 'Guest'}</div>
+              <div className="font-medium">#{o.orderNumber} · {pendingSourceLabel(o)}</div>
+              <div className="text-sm text-slate-500">{o.itemCount} {o.itemCount === 1 ? 'item' : 'items'} · {money(o.grandTotal)} · {o.customerName ?? 'Guest'}</div>
             </div>
             <div className="flex gap-2">
               <Link to={`/pos/orders/${o.id}`}><Button variant="ghost" size="sm">View</Button></Link>

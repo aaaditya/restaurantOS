@@ -19,11 +19,15 @@ import { CustomersPage } from './features/customers/CustomersPage'
 import { DashboardPage } from './features/dashboard/DashboardPage'
 import { GuestOrderPage } from './features/qr/GuestOrderPage'
 import { ReportsPage } from './features/reports/ReportsPage'
+import { BillingPage } from './features/billing/BillingPage'
+import { IntegrationsPage } from './features/integrations/IntegrationsPage'
+import { MockCheckoutPage } from './features/payments/MockCheckoutPage'
 
 export const router: RouteObject[] = [
   { path: '/login', element: <LoginPage /> },
   { path: '/signup', element: <SignupPage /> },
   { path: '/qr/:token', element: <GuestOrderPage /> },
+  { path: '/pay/mock/:providerRef', element: <MockCheckoutPage /> },
   {
     element: <RequireAuth />,
     children: [
@@ -48,6 +52,8 @@ export const router: RouteObject[] = [
           { path: '/customers', element: <CustomersPage /> },
           { path: '/reports', element: <ReportsPage /> },
           { path: '/audit', element: <AuditPage /> },
+          { path: '/billing', element: <BillingPage /> },
+          { path: '/integrations', element: <IntegrationsPage /> },
           { path: '*', element: <NotFound /> },
         ],
       },

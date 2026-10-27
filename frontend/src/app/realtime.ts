@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { accessToken } from './api'
 
-export type RealtimeEvent = 'kotChanged' | 'orderChanged' | 'qrOrderPlaced' | 'stockChanged'
+export type RealtimeEvent = 'kotChanged' | 'orderChanged' | 'qrOrderPlaced' | 'stockChanged' | 'externalOrderPlaced' | 'paymentIntentChanged'
 
 /**
  * Joins the outlet's SignalR group and invalidates the given query keys when events arrive.
@@ -32,7 +32,7 @@ export function useOutletRealtime(
       .configureLogging(LogLevel.Warning)
       .build()
 
-    const events: RealtimeEvent[] = ['kotChanged', 'orderChanged', 'qrOrderPlaced', 'stockChanged']
+    const events: RealtimeEvent[] = ['kotChanged', 'orderChanged', 'qrOrderPlaced', 'stockChanged', 'externalOrderPlaced', 'paymentIntentChanged']
     for (const event of events) {
       connection.on(event, (payload: unknown) => {
         for (const key of invalidateRef.current[event] ?? []) void queryClient.invalidateQueries({ queryKey: key })

@@ -93,7 +93,7 @@ public static class OrderEndpoints
             .Select(o => new
             {
                 o.Id, o.OrderNumber, o.Type, o.Source, o.Status, o.TableId, o.TableName, o.CustomerName, o.CustomerPhone,
-                o.GrandTotal, o.InvoiceNumber, o.CreatedAt, o.SettledAt, o.Version,
+                o.GrandTotal, o.InvoiceNumber, o.CreatedAt, o.SettledAt, o.Version, o.ExternalRef,
                 itemCount = o.Lines.Count(l => l.Status != OrderLineStatus.Voided),
                 pendingItems = o.Lines.Count(l => l.Status == OrderLineStatus.Pending),
             })
