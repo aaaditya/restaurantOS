@@ -1,19 +1,18 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { api, newId } from '../../app/api'
 import { Button, ErrorBanner, Modal } from '../../components/ui'
 import { money, paymentLabel } from '../../lib/format'
-import type { Order, PaymentMethod, SettlementResult } from '../../types'
+import type { CustomerDetail, Order, Outlet, PaymentMethod, SettlementResult } from '../../types'
 
 type Row = { key: string; method: PaymentMethod; amount: string; tendered: string; reference: string }
 const METHODS: PaymentMethod[] = ['Cash', 'Upi', 'Card', 'Wallet']
 
 const round2 = (n: number) => Math.round(n * 100) / 100
 
-export function SettleDialog({ order, extraMethods = [], onClose, onSettled }: {
+export function SettleDialog({ order, onClose, onSettled }: {
   order: Order
-  extraMethods?: { method: PaymentMethod; label: string; max?: number; reference?: string }[]
   onClose: () => void
   onSettled: (r: SettlementResult) => void
 }) {
@@ -25,7 +24,22 @@ export function SettleDialog({ order, extraMethods = [], onClose, onSettled }: {
   const paid = round2(rows.reduce((s, r) => s + (Number(r.amount) || 0), 0))
   const remaining = round2(order.grandTotal - paid)
   const change = rows.reduce((s, r) => (r.method === 'Cash' && Number(r.tendered) > Number(r.amount) ? s + Number(r.tendered) - Number(r.amount) : s), 0)
-  const methods = [...METHODS.map((m) => ({ method: m, label: paymentLabel[m] })), ...extraMethods]
+  const outlet = useQuery({ queryKey: ['outlet', order.outletId], queryFn: () => api<Outlet>(`/api/outlets/${order.outletId}`), staleTime: 60_000 })
+  const customer = useQuery({
+    queryKey: ['customer', order.customerId],
+    queryFn: () => api<CustomerDetail>(`/api/customers/${order.customerId}`),
+    enabled: !!order.customerId,
+  })
+  const points = customer.data?.customer.loyaltyPoints ?? 0
+  const pointValue = outlet.data?.loyaltyPointValue ?? 0
+  // Redemption needs ceil(amount / pointValue) points, so the cap is the value of the whole points held.
+  const loyaltyMax = pointValue > 0 ? Math.min(Math.floor(points * pointValue * 100) / 100, order.grandTotal) : 0
+  const loyaltyUsed = round2(rows.filter((r) => r.method === 'Loyalty').reduce((s, r) => s + (Number(r.amount) || 0), 0))
+  const loyaltyOver = loyaltyUsed > loyaltyMax
+  const methods = [
+    ...METHODS.map((m) => ({ method: m, label: paymentLabel[m] })),
+    ...(loyaltyMax > 0 ? [{ method: 'Loyalty' as PaymentMethod, label: `Loyalty points (up to ${money(loyaltyMax)})` }] : []),
+  ]
 
   const update = (key: string, patch: Partial<Row>) => setRows((rs) => rs.map((r) => (r.key === key ? { ...r, ...patch } : r)))
 
@@ -39,7 +53,7 @@ export function SettleDialog({ order, extraMethods = [], onClose, onSettled }: {
           method: r.method,
           amount: round2(Number(r.amount)),
           tendered: r.method === 'Cash' && r.tendered ? round2(Number(r.tendered)) : null,
-          reference: r.reference || extraMethods.find((m) => m.method === r.method)?.reference || null,
+          reference: r.reference || null,
         })),
       },
     }),
@@ -47,6 +61,8 @@ export function SettleDialog({ order, extraMethods = [], onClose, onSettled }: {
       void qc.invalidateQueries({ queryKey: ['order', order.outletId] })
       void qc.invalidateQueries({ queryKey: ['orders', order.outletId] })
       void qc.invalidateQueries({ queryKey: ['tables', order.outletId] })
+      void qc.invalidateQueries({ queryKey: ['customer'] })
+      void qc.invalidateQueries({ queryKey: ['customers'] })
       onSettled(r)
     },
   })
@@ -57,7 +73,7 @@ export function SettleDialog({ order, extraMethods = [], onClose, onSettled }: {
     <Modal open onClose={onClose} title={`Settle order #${order.orderNumber}`} size="md"
       footer={<>
         <Button variant="secondary" onClick={onClose}>Cancel</Button>
-        <Button variant="success" disabled={remaining !== 0} loading={settle.isPending} onClick={() => settle.mutate()}>
+        <Button variant="success" disabled={remaining !== 0 || loyaltyOver} loading={settle.isPending} onClick={() => settle.mutate()}>
           Settle {money(order.grandTotal)}
         </Button>
       </>}>
@@ -67,6 +83,12 @@ export function SettleDialog({ order, extraMethods = [], onClose, onSettled }: {
           <div className="text-sm text-slate-500">Amount due</div>
           <div className="text-3xl font-semibold" data-testid="amount-due">{money(order.grandTotal)}</div>
         </div>
+        {order.customerId && customer.data && (
+          <p className="rounded-lg bg-brand-50 px-3 py-2 text-sm text-brand-800" data-testid="loyalty-balance">
+            {customer.data.customer.name ?? customer.data.customer.phone}: {customer.data.customer.loyaltyPoints} points
+            {loyaltyMax > 0 ? ` (worth ${money(loyaltyMax)})` : ''}
+          </p>
+        )}
         <div className="flex flex-wrap gap-2" role="group" aria-label="Quick pay">
           {METHODS.map((m) => <Button key={m} variant="secondary" size="sm" onClick={() => quick(m)}>Full {paymentLabel[m]}</Button>)}
         </div>
@@ -111,6 +133,7 @@ export function SettleDialog({ order, extraMethods = [], onClose, onSettled }: {
           <dt className="text-slate-500">Paid</dt><dd className="text-right font-medium">{money(paid)}</dd>
           <dt className="text-slate-500">Remaining</dt>
           <dd className={remaining === 0 ? 'text-right font-medium text-emerald-700' : 'text-right font-medium text-rose-700'}>{money(remaining)}</dd>
+          {loyaltyOver && <dd className="col-span-2 text-rose-700">Loyalty payment exceeds the {money(loyaltyMax)} available.</dd>}
           {change > 0 && <><dt className="text-slate-500">Change to return</dt><dd className="text-right text-lg font-semibold">{money(change)}</dd></>}
         </dl>
       </div>

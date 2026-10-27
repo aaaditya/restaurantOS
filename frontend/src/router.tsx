@@ -14,10 +14,16 @@ import { PurchasingPage } from './features/purchasing/PurchasingPage'
 import { SettingsPage } from './features/settings/SettingsPage'
 import { StaffPage } from './features/staff/StaffPage'
 import { TablesPage } from './features/tables/TablesPage'
+import { AuditPage } from './features/audit/AuditPage'
+import { CustomersPage } from './features/customers/CustomersPage'
+import { DashboardPage } from './features/dashboard/DashboardPage'
+import { GuestOrderPage } from './features/qr/GuestOrderPage'
+import { ReportsPage } from './features/reports/ReportsPage'
 
 export const router: RouteObject[] = [
   { path: '/login', element: <LoginPage /> },
   { path: '/signup', element: <SignupPage /> },
+  { path: '/qr/:token', element: <GuestOrderPage /> },
   {
     element: <RequireAuth />,
     children: [
@@ -38,6 +44,10 @@ export const router: RouteObject[] = [
           { path: '/inventory', element: <InventoryPage /> },
           { path: '/purchasing', element: <PurchasingPage /> },
           { path: '/settings', element: <SettingsPage /> },
+          { path: '/dashboard', element: <DashboardPage /> },
+          { path: '/customers', element: <CustomersPage /> },
+          { path: '/reports', element: <ReportsPage /> },
+          { path: '/audit', element: <AuditPage /> },
           { path: '*', element: <NotFound /> },
         ],
       },

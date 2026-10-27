@@ -55,7 +55,7 @@ export type Order = {
   subtotal: number; discountTotal: number; taxTotal: number; roundOff: number; grandTotal: number; paidTotal: number
   taxBreakdown: { code: string; ratePercent: number; amount: number }[]
   invoiceNumber: string | null; businessDate: string | null; createdAt: string; billedAt: string | null; settledAt: string | null
-  cancelledAt: string | null; cancelReason: string | null; version: number; lines: OrderLine[]
+  cancelledAt: string | null; cancelReason: string | null; mergedIntoOrderId: string | null; version: number; lines: OrderLine[]
 }
 
 export type OrderSummary = Pick<Order, 'id' | 'orderNumber' | 'type' | 'source' | 'status' | 'tableId' | 'tableName' | 'customerName'
@@ -139,4 +139,69 @@ export type PurchaseOrder = {
   id: string; outletId: string; number: number; status: PoStatus; supplierId: string; supplierName: string | null; notes: string | null
   total: number; createdAt: string; orderedAt: string | null; receivedAt: string | null
   lines: { id: string; inventoryItemId: string; itemName: string | null; unit: StockUnit | null; quantity: number; unitCost: number; receivedQuantity: number | null; amount: number }[]
+}
+
+export type Customer = {
+  id: string; phone: string; name: string | null; email: string | null; birthday: string | null; notes: string | null
+  loyaltyPoints: number; totalSpend: number; visitCount: number; lastVisitAt: string | null; createdAt: string
+}
+export type LoyaltyTransaction = {
+  id: string; outletId: string | null; orderId: string | null; type: 'Earn' | 'Redeem' | 'Adjust'; points: number; balanceAfter: number
+  notes: string | null; createdAt: string
+}
+export type CustomerDetail = {
+  customer: Customer
+  loyalty: LoyaltyTransaction[]
+  orders: { id: string; outletId: string; orderNumber: number; invoiceNumber: string | null; type: OrderType; grandTotal: number; settledAt: string }[]
+}
+
+export type ReportGroupRow = { key: string; orders: number; netSales: number; total: number }
+export type SalesReport = {
+  from: string; to: string; currency: string
+  summary: {
+    orders: number; guests: number; grossSales: number; discounts: number; netSales: number; tax: number; roundOff: number
+    totalCollected: number; averageOrderValue: number; cancelledOrders: number; cancelledValue: number; voidedItems: number; voidedValue: number
+  }
+  byType: ReportGroupRow[]
+  bySource: ReportGroupRow[]
+  payments: { method: PaymentMethod; count: number; amount: number }[]
+  taxes: { code: string; ratePercent: number; taxable: number; amount: number }[]
+  items: { menuItemId: string; name: string; category: string; quantity: number; netSales: number; total: number }[]
+  categories: { category: string; quantity: number; netSales: number; total: number }[]
+  daily: { date: string; orders: number; netSales: number; total: number }[]
+  hourly: { hour: number; orders: number; total: number }[]
+}
+export type DayEndReport = {
+  date: string; currency: string; settledOrders: number; salesTotal: number; paymentsTotal: number; unreconciled: number
+  payments: { method: PaymentMethod; count: number; amount: number }[]
+  cashOutsideSessions: number
+  cashSessions: {
+    id: string; status: 'Open' | 'Closed'; openedBy: string | null; closedBy: string | null; openedAt: string; closedAt: string | null
+    openingFloat: number; cashPayments: number; expectedCash: number; countedCash: number | null; variance: number | null
+  }[]
+  cashVariance: number; openCashSessions: number; runningOrders: number
+}
+export type Dashboard = {
+  currency: string
+  totals: { orders: number; netSales: number; totalCollected: number; averageOrderValue: number }
+  outlets: {
+    outletId: string; name: string; date: string; orders: number; netSales: number; totalCollected: number; averageOrderValue: number
+    runningOrders: number; pendingQrOrders: number; lowStockItems: number; cashSessionOpen: boolean
+  }[]
+  trend: { date: string; totalCollected: number }[]
+  topItems: { menuItemId: string; name: string; quantity: number; total: number }[]
+}
+export type AuditEntry = {
+  id: string; createdAt: string; outletId: string | null; userId: string | null; userName: string | null; action: string
+  entityType: string; entityId: string | null; data: string | null; ipAddress: string | null
+}
+export type AuditPage = { items: AuditEntry[]; nextBefore: string | null }
+
+export type PublicTable = {
+  restaurant: string; outlet: string; table: string; orderingOpen: boolean; pricesIncludeTax: boolean; menu: PosMenu | null
+}
+export type GuestOrder = {
+  clientOrderId: string; orderNumber: number; state: 'pending' | 'accepted' | 'rejected' | 'completed'; tableName: string | null
+  grandTotal: number | null; createdAt: string
+  lines: { itemName: string; variantName: string | null; quantity: number; unitPrice: number; modifiers: string[]; notes: string | null }[]
 }

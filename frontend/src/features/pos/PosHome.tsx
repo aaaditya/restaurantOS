@@ -140,7 +140,9 @@ function PendingOrders({ orders }: { orders: OrderSummary[] }) {
               {can('OrderCancel') && <Button variant="secondary" size="sm" onClick={() => { setReason(''); setRejecting(o) }}><X className="size-4" /> Reject</Button>}
               <Button variant="success" size="sm" loading={accept.isPending && accept.variables?.id === o.id}
                 onClick={() => accept.mutate(o, {
-                  onSuccess: () => toast(`Order #${o.orderNumber} accepted and sent to kitchen`),
+                  onSuccess: (result) => toast(result.id === o.id
+                    ? `Order #${o.orderNumber} accepted and sent to kitchen`
+                    : `Items from #${o.orderNumber} added to running order #${result.orderNumber} and sent to kitchen`),
                   onError: (e) => toast(errorMessage(e), 'error'),
                 })}>
                 <Check className="size-4" /> Accept

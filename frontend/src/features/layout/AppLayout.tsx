@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import {
   BarChart3, Boxes, ChefHat, ClipboardList, CreditCard, LayoutDashboard, LogOut, Menu as MenuIcon, NotebookTabs, Settings,
-  ShieldCheck, ShoppingCart, Truck, Users, UtensilsCrossed, Wallet, X, type LucideIcon,
+  ScrollText, ShieldCheck, ShoppingCart, Truck, Users, UtensilsCrossed, Wallet, X, type LucideIcon,
 } from 'lucide-react'
 import { useState } from 'react'
 import { Navigate, NavLink, Outlet, useLocation } from 'react-router'
@@ -23,6 +23,7 @@ export const NAV: NavItem[] = [
   { to: '/purchasing', label: 'Purchasing', icon: Truck, permission: 'PurchaseManage' },
   { to: '/customers', label: 'Customers', icon: Users, permission: 'CustomerView' },
   { to: '/reports', label: 'Reports', icon: BarChart3, permission: 'ReportsView' },
+  { to: '/audit', label: 'Audit log', icon: ScrollText, permission: 'AuditView' },
   { to: '/staff', label: 'Staff', icon: ShieldCheck, permission: 'StaffManage', tenant: true },
   { to: '/billing', label: 'Billing', icon: CreditCard, permission: 'BillingManage', tenant: true },
   { to: '/settings', label: 'Settings', icon: Settings, permission: 'OutletManage' },
@@ -34,7 +35,10 @@ export function useNavItems() {
 }
 
 /** Routes that are implemented; extended as modules ship. */
-export const ENABLED_ROUTES = new Set<string>(['/pos', '/orders', '/kitchen', '/cash', '/menu', '/tables', '/inventory', '/purchasing', '/staff', '/settings'])
+export const ENABLED_ROUTES = new Set<string>([
+  '/dashboard', '/pos', '/orders', '/kitchen', '/cash', '/menu', '/tables', '/inventory', '/purchasing', '/customers', '/reports', '/audit',
+  '/staff', '/settings',
+])
 
 export function RequireAuth() {
   const { isAuthenticated, isLoading, me } = useSession()
