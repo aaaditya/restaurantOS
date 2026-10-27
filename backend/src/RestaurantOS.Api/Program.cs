@@ -24,6 +24,21 @@ if (jwt.SigningKey.Length < 32)
     throw new InvalidOperationException("Jwt:SigningKey must be at least 32 characters. Provide it via environment/secret store.");
 if (builder.Environment.IsProduction() && jwt.SigningKey.StartsWith("dev-", StringComparison.Ordinal))
     throw new InvalidOperationException("Refusing to start in Production with the development JWT signing key.");
+if (builder.Environment.IsProduction() && config.GetValue<bool>("Integrations:EnableMockSimulators"))
+    throw new InvalidOperationException("Refusing to start in Production with mock payment and partner simulators enabled.");
+
+if (!builder.Environment.IsDevelopment())
+{
+    builder.Logging.ClearProviders();
+    builder.Logging.AddJsonConsole(o =>
+    {
+        o.IncludeScopes = true;
+        o.UseUtcTimestamp = true;
+        o.TimestampFormat = "yyyy-MM-dd'T'HH:mm:ss.fff'Z'";
+    });
+}
+builder.AddObservability();
+builder.Services.AddReverseProxySupport(config);
 
 builder.Services.Configure<JwtOptions>(config.GetSection("Jwt"));
 builder.Services.AddSingleton(TimeProvider.System);
@@ -100,7 +115,9 @@ if (config.GetValue<bool>("Database:MigrateOnStartup"))
     await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
 }
 
+app.UseForwardedHeaders();
 app.UseExceptionHandler();
+if (!app.Environment.IsDevelopment()) app.UseHsts();
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.Use(async (ctx, next) =>
 {

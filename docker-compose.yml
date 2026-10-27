@@ -21,13 +21,15 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__Default: Host=postgres;Port=5432;Database=restaurantos;Username=restaurantos;Password=${POSTGRES_PASSWORD:-restaurantos}
       Database__MigrateOnStartup: "true"
       Jwt__SigningKey: ${JWT_SIGNING_KEY:?Set JWT_SIGNING_KEY in .env (at least 32 random characters)}
       Cors__Origins__0: http://localhost:8080
+      # The web container's nginx is the only proxy; Docker assigns compose networks from this range.
+      ReverseProxy__KnownNetworks__0: ${TRUSTED_PROXY_NETWORK:-172.16.0.0/12}
       Integrations__MockPaymentWebhookSecret: ${MOCK_PAYMENT_WEBHOOK_SECRET:-}
       Integrations__EnableMockSimulators: ${ENABLE_MOCK_SIMULATORS:-false}
+      ASPNETCORE_ENVIRONMENT: ${API_ENVIRONMENT:-Production}
 
   web:
     build: ./frontend
