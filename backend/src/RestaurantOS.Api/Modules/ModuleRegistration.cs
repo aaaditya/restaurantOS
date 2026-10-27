@@ -5,6 +5,7 @@ using RestaurantOS.Api.Modules.Kitchen;
 using RestaurantOS.Api.Modules.Menu;
 using RestaurantOS.Api.Modules.Orders;
 using RestaurantOS.Api.Modules.Payments;
+using RestaurantOS.Api.Modules.Reports;
 using RestaurantOS.Api.Modules.Tables;
 using RestaurantOS.Api.Modules.Tenancy;
 
@@ -20,6 +21,7 @@ public static class ModuleRegistration
         services.AddScoped<InventoryService>();
         services.AddScoped<OrderService>();
         services.AddScoped<SettlementService>();
+        services.AddScoped<ReportService>();
         return services;
     }
 
@@ -37,5 +39,6 @@ public static class ModuleRegistration
         app.MapPurchasingEndpoints();
         app.MapPublicOrderEndpoints();
         app.MapCustomerEndpoints();
+        app.MapReportEndpoints();
     }
 }
