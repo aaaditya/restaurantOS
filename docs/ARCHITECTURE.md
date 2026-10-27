@@ -97,11 +97,30 @@ service** (e.g. settlement calls `InventoryService.PostConsumptionAsync`).
 - Authorization data (roles per outlet) is loaded per request from the database (cached per
   request), so revocations take effect immediately rather than at token expiry.
 
+## QR ordering
+
+- `/api/public/tables/{qrToken}` is anonymous and rate-limited (`public` policy). The token resolves the
+  table, outlet and tenant; ordering is open only when the outlet enables it and the subscription is usable.
+- The guest's client-generated `clientOrderId` makes placement idempotent and is the credential for
+  tracking that one order. Guest orders are `AwaitingAcceptance` and send no KOT until staff accept.
+- Accepting a QR order for a table with a running open order copies its lines into that order (sending
+  them to the kitchen) and cancels the QR order with `merged_into_order_id`, so one table has one bill.
+
+## Reporting
+
+- Reports read settled orders' stored line amounts, never current menu prices. Net sales are the
+  pre-tax amounts after discounts (sum of line `taxable`); collected is the grand total including tax
+  and round-off. Business dates are outlet-local.
+- Day-end reconciliation compares payments with settled bills for the business date, and lists cash
+  sessions overlapping that date with expected cash, counted cash and variance.
+- The dashboard and audit log include only outlets where the caller's roles grant `ReportsView` or
+  `AuditView`; outlet-level auditors never see tenant-wide entries.
+
 ## Real-time
 
 `/hubs/outlet` (SignalR). Clients call `JoinOutlet(outletId)`; the hub verifies access and adds the
 connection to group `outlet:{id}`. Server events: `kotChanged`, `orderChanged`, `qrOrderPlaced`,
-`tableChanged`. Payloads are small; clients refetch via HTTP for full state.
+`stockChanged`. Payloads are small; clients refetch via HTTP for full state.
 
 ## Frontend
 

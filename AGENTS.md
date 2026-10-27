@@ -36,9 +36,20 @@ RestaurantOS is a multi-tenant restaurant management SaaS. Read these before cha
 ## Commands
 ```bash
 # backend
-cd backend && dotnet build && dotnet test
-dotnet ef migrations add <Name> -p src/RestaurantOS.Infrastructure -s src/RestaurantOS.Api -o Persistence/Migrations
+cd backend && dotnet build -warnaserror
+dotnet test --project tests/RestaurantOS.UnitTests
+dotnet test --project tests/RestaurantOS.IntegrationTests   # needs local PostgreSQL (docs/DEVELOPMENT.md)
+ConnectionStrings__Default="Host=localhost;Database=restaurantos;Username=restaurantos;Password=restaurantos" \
+  dotnet ef migrations add <Name> --project src/RestaurantOS.Infrastructure \
+  --startup-project src/RestaurantOS.Infrastructure --output-dir Persistence/Migrations
 # frontend
-cd frontend && npm ci && npm run lint && npm run build && npm test
-npx playwright test   # needs API on :5080 and web on :5173 (see docs/DEVELOPMENT.md)
+cd frontend && npm ci && npm run lint && npm run build
+npx playwright test   # starts the API on :5080 (database restaurantos_e2e) and Vite on :5173
 ```
+
+## Conventions worth knowing
+- Integration tests that read through `ApiFactory.WithDbAsync` must use `.IgnoreQueryFilters()`.
+- Owners land on `/dashboard`; the Playwright `signup` helper then opens the POS.
+- `Card` titles are accessible region names; Playwright can scope with `getByRole('region', { name })`.
+- Do not rely on per-call `mutate(vars, { onSuccess })` when the calling component may unmount as a
+  result (for example, list items); use `mutateAsync(...).then(...)`.

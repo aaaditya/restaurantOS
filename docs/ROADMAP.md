@@ -70,12 +70,13 @@ Acceptance: Playwright test drives POS → KOT on kitchen display → settle →
 
 ## Phase 5 — CRM, loyalty, QR ordering, reports
 
-- [ ] Customers (phone unique per tenant), visit/spend stats
-- [ ] Loyalty earn on settlement, redeem as payment method, loyalty ledger
-- [ ] QR table ordering (public, token per table) → staff accepts → KOT
-- [ ] Reports: sales summary, item sales, category sales, payment mix, tax summary, hourly
-- [ ] Day-end reconciliation report (payments vs cash sessions)
-- [ ] Dashboard with live KPIs from real data
+- [x] Customers (phone unique per tenant), visit/spend stats, search/sort, profile with bills and points history
+- [x] Loyalty earn on settlement, redeem as payment method (row-locked, cannot overspend), manual adjustments, loyalty ledger
+- [x] QR table ordering (public, token per table, rate-limited) → staff accepts live → KOT; merges into a running table order; guest tracking
+- [x] Reports: sales summary, item sales, category sales, payment mix, tax summary (taxable value per rate), daily, hourly, leakage; CSV export
+- [x] Day-end reconciliation report (payments vs settled bills, cash sessions, variance, closing checklist)
+- [x] Dashboard with KPIs from real data across permitted outlets (today, 7-day trend, top items, attention flags)
+- [x] Audit log viewer (role-scoped, filter by area/outlet, paginated)
 
 ## Phase 6 — Subscriptions and integrations
 
