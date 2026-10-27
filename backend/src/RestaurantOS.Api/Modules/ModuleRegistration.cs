@@ -1,4 +1,6 @@
+using RestaurantOS.Api.Modules.Billing;
 using RestaurantOS.Api.Modules.Customers;
+using RestaurantOS.Api.Modules.Integrations;
 using RestaurantOS.Api.Modules.Identity;
 using RestaurantOS.Api.Modules.Inventory;
 using RestaurantOS.Api.Modules.Kitchen;
@@ -22,6 +24,9 @@ public static class ModuleRegistration
         services.AddScoped<OrderService>();
         services.AddScoped<SettlementService>();
         services.AddScoped<ReportService>();
+        services.AddScoped<ExternalOrderService>();
+        services.AddScoped<MockPaymentGateway>();
+        services.AddSingleton<IBillingProvider, MockBillingProvider>();
         return services;
     }
 
@@ -40,5 +45,9 @@ public static class ModuleRegistration
         app.MapPublicOrderEndpoints();
         app.MapCustomerEndpoints();
         app.MapReportEndpoints();
+        app.MapBillingEndpoints();
+        app.MapApiKeyEndpoints();
+        app.MapExternalOrderEndpoints(config);
+        app.MapPaymentGatewayEndpoints(config);
     }
 }

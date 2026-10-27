@@ -34,6 +34,8 @@ public static class RealtimeEvents
     public const string KotChanged = "kotChanged";
     public const string OrderChanged = "orderChanged";
     public const string QrOrderPlaced = "qrOrderPlaced";
+    public const string ExternalOrderPlaced = "externalOrderPlaced";
+    public const string PaymentIntentChanged = "paymentIntentChanged";
     public const string StockChanged = "stockChanged";
 }
 
