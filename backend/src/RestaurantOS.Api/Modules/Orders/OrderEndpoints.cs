@@ -156,6 +156,7 @@ public static class OrderDto
         o.SettledAt,
         o.CancelledAt,
         o.CancelReason,
+        o.MergedIntoOrderId,
         o.Version,
         lines = o.Lines.OrderBy(l => l.CreatedAt).ThenBy(l => l.Id).Select(l => new
         {

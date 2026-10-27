@@ -90,6 +90,7 @@ public class Order : TenantEntity, IOutletScoped
     public DateTimeOffset? SettledAt { get; set; }
     public DateTimeOffset? CancelledAt { get; set; }
     public string? CancelReason { get; set; }
+    public Guid? MergedIntoOrderId { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 
@@ -171,6 +172,42 @@ public class Order : TenantEntity, IOutletScoped
         if (Status != OrderStatus.AwaitingAcceptance)
             throw new ConflictException("order_not_awaiting", "Order is not awaiting acceptance.");
         Status = OrderStatus.Open;
+    }
+
+    /// <summary>
+    /// Moves the items of this order (awaiting acceptance, e.g. a QR order) into a running order for the same table and
+    /// cancels this one. Returns the copied lines, which are pending in <paramref name="target"/>.
+    /// </summary>
+    public List<OrderLine> MergeInto(Order target, Guid? userId, DateTimeOffset now)
+    {
+        if (Status != OrderStatus.AwaitingAcceptance)
+            throw new ConflictException("order_not_awaiting", "Order is not awaiting acceptance.");
+        if (target.OutletId != OutletId || target.Id == Id) throw new DomainException("validation", "Orders cannot be merged.");
+        if (target.Status != OrderStatus.Open)
+            throw new ConflictException("order_not_open", "The running order has been billed. Reopen it before accepting more items.");
+
+        var copies = ActiveLines.Select(l => new OrderLine
+        {
+            OrderId = target.Id,
+            MenuItemId = l.MenuItemId,
+            VariantId = l.VariantId,
+            ItemName = l.ItemName,
+            VariantName = l.VariantName,
+            Station = l.Station,
+            UnitPrice = l.UnitPrice,
+            Quantity = l.Quantity,
+            Modifiers = l.Modifiers.Select(m => new LineModifier { OptionId = m.OptionId, GroupName = m.GroupName, Name = m.Name, Price = m.Price }).ToList(),
+            TaxRates = l.TaxRates.Select(t => new LineTax { Code = t.Code, RatePercent = t.RatePercent }).ToList(),
+            Notes = l.Notes,
+            AddedByUserId = userId,
+        }).ToList();
+        if (copies.Count == 0) throw new DomainException("order_empty", "Order has no items.");
+
+        target.Lines.AddRange(copies);
+        target.Recalculate();
+        Cancel($"Merged into order #{target.OrderNumber}", now);
+        MergedIntoOrderId = target.Id;
+        return copies;
     }
 
     public void MarkBilled(DateTimeOffset now)

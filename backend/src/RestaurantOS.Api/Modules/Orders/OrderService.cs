@@ -217,10 +217,10 @@ public sealed class OrderService(
         var order = await LoadForUpdateAsync(outletId, orderId, version, ct);
         if (order.TableId is { } tableId)
         {
-            var running = await db.Orders.AnyAsync(o => o.Id != order.Id && o.TableId == tableId
-                && (o.Status == OrderStatus.Open || o.Status == OrderStatus.Billed), ct);
-            if (running)
-                throw new ConflictException("table_occupied", "The table already has a running order. Add these items to it or reject this order.");
+            var runningId = await db.Orders.Where(o => o.Id != order.Id && o.TableId == tableId
+                    && (o.Status == OrderStatus.Open || o.Status == OrderStatus.Billed))
+                .OrderBy(o => o.CreatedAt).Select(o => (Guid?)o.Id).FirstOrDefaultAsync(ct);
+            if (runningId is { } targetId) return await MergeAsync(order, targetId, ct);
         }
 
         order.Accept();
@@ -232,6 +232,27 @@ public sealed class OrderService(
         await PublishAsync(order);
         await kitchen.PublishAsync(outletId, kots);
         return order;
+    }
+
+    /// <summary>Accepting a QR order for a table that already has a running order adds its items to that order.</summary>
+    private async Task<Order> MergeAsync(Order source, Guid targetId, CancellationToken ct)
+    {
+        var target = await LoadForUpdateAsync(source.OutletId, targetId, null, ct);
+        var now = clock.GetUtcNow();
+        var copies = source.MergeInto(target, tenant.UserId, now);
+        foreach (var line in copies) db.Add(line);
+
+        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        var kots = await kitchen.SendPendingAsync(target, await OutletAsync(source.OutletId, ct), tenant.UserId, ct);
+        await audit.AddAsync("order.merged", "Order", source.Id, new { source.OrderNumber, into = target.OrderNumber, source.Source },
+            source.OutletId, ct);
+        source.UpdatedAt = now;
+        await SaveAsync(target, ct);
+        await tx.CommitAsync(ct);
+        await PublishAsync(source);
+        await PublishAsync(target);
+        await kitchen.PublishAsync(source.OutletId, kots);
+        return target;
     }
 
     public async Task<Order> ApplyDiscountAsync(Guid outletId, Guid orderId, DiscountRequest req, CancellationToken ct)

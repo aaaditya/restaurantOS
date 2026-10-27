@@ -1501,6 +1501,10 @@ namespace RestaurantOS.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(60)")
                         .HasColumnName("invoice_number");
 
+                    b.Property<Guid?>("MergedIntoOrderId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("merged_into_order_id");
+
                     b.Property<string>("Notes")
                         .HasColumnType("text")
                         .HasColumnName("notes");

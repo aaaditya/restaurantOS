@@ -40,6 +40,8 @@ public sealed class CustomerService(AppDbContext db, TimeProvider clock)
     public async Task ApplySettlementAsync(Order order, Outlet outlet, decimal loyaltyRedeemedAmount, CancellationToken ct)
     {
         if (order.CustomerId is not { } customerId) return;
+        // Serialises concurrent settlements for the same customer so points cannot be redeemed twice.
+        await db.Database.ExecuteSqlAsync($"SELECT 1 FROM customers WHERE id = {customerId} FOR UPDATE", ct);
         var customer = await db.Customers.FirstAsync(c => c.Id == customerId, ct);
         var now = clock.GetUtcNow();
 
