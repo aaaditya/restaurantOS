@@ -33,5 +33,7 @@ public static class ModuleRegistration
         app.MapOrderEndpoints();
         app.MapKitchenEndpoints();
         app.MapCashSessionEndpoints();
+        app.MapInventoryEndpoints();
+        app.MapPurchasingEndpoints();
     }
 }

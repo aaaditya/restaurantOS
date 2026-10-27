@@ -105,7 +105,52 @@ public class PurchaseOrder : TenantEntity, IOutletScoped
     public Guid? CreatedByUserId { get; set; }
     public List<PurchaseOrderLine> Lines { get; set; } = [];
 
-    public void Recalculate() => Total = Money.Round(Lines.Sum(l => Money.Round(l.Quantity * l.UnitCost)));
+    public void Recalculate() =>
+        Total = Money.Round(Lines.Sum(l => Money.Round((Status == PurchaseOrderStatus.Received ? l.ReceivedQuantity ?? 0 : l.Quantity) * l.UnitCost)));
+
+    public void EnsureEditable()
+    {
+        if (Status != PurchaseOrderStatus.Draft)
+            throw new ConflictException("po_not_draft", "Only draft purchase orders can be edited.");
+    }
+
+    public void MarkOrdered(DateTimeOffset now)
+    {
+        EnsureEditable();
+        if (Lines.Count == 0) throw new DomainException("po_empty", "Add at least one line before ordering.");
+        Status = PurchaseOrderStatus.Ordered;
+        OrderedAt = now;
+    }
+
+    /// <summary>Records received quantities (and actual unit costs) per line. Lines not listed are received in full.</summary>
+    public void Receive(IReadOnlyDictionary<Guid, (decimal Quantity, decimal? UnitCost)> received, DateTimeOffset now)
+    {
+        if (Status is not (PurchaseOrderStatus.Draft or PurchaseOrderStatus.Ordered))
+            throw new ConflictException("po_not_receivable", "This purchase order has already been received or cancelled.");
+        if (Lines.Count == 0) throw new DomainException("po_empty", "The purchase order has no lines.");
+        if (received.Keys.Any(id => Lines.All(l => l.Id != id))) throw new NotFoundException("Purchase order line");
+
+        foreach (var line in Lines)
+        {
+            var (qty, cost) = received.TryGetValue(line.Id, out var r) ? r : (line.Quantity, null);
+            if (qty < 0) throw new DomainException("validation", "Received quantity cannot be negative.");
+            if (cost is < 0) throw new DomainException("validation", "Unit cost cannot be negative.");
+            line.ReceivedQuantity = Money.RoundQuantity(qty);
+            if (cost is { } c) line.UnitCost = Money.Round(c);
+        }
+
+        if (Lines.All(l => l.ReceivedQuantity == 0)) throw new DomainException("po_nothing_received", "Enter at least one received quantity.");
+        Status = PurchaseOrderStatus.Received;
+        ReceivedAt = now;
+        Recalculate();
+    }
+
+    public void Cancel()
+    {
+        if (Status is not (PurchaseOrderStatus.Draft or PurchaseOrderStatus.Ordered))
+            throw new ConflictException("po_not_cancellable", "Received or cancelled purchase orders cannot be cancelled.");
+        Status = PurchaseOrderStatus.Cancelled;
+    }
 }
 
 public class PurchaseOrderLine : Entity
