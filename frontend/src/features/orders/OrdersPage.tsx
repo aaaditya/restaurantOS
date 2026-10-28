@@ -3,15 +3,18 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { api } from '../../app/api'
 import { useOutletId } from '../../app/session'
+import { useBusinessToday } from '../../app/useBusinessToday'
 import { Card, ErrorBanner, PageHeader, Select, Spinner, Table, Td } from '../../components/ui'
-import { dateTime, money, orderTypeLabel, today } from '../../lib/format'
+import { dateTime, money, orderTypeLabel } from '../../lib/format'
 import type { OrderSummary } from '../../types'
 import { StatusBadge } from '../pos/OrderScreen'
 
 export function OrdersPage() {
   const outletId = useOutletId()
   const [view, setView] = useState('all')
-  const [date, setDate] = useState(today())
+  const businessToday = useBusinessToday(outletId)
+  const [picked, setDate] = useState<string | null>(null)
+  const date = picked ?? businessToday
   const q = useQuery({
     queryKey: ['orders', outletId, view, date],
     queryFn: () => api<OrderSummary[]>(`/api/outlets/${outletId}/orders?view=${view}${view === 'running' ? '' : `&date=${date}`}`),

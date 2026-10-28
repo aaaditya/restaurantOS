@@ -4,9 +4,10 @@ import { AlertTriangle, CheckCircle2, Download } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { api } from '../../app/api'
 import { useOutletId, useSession } from '../../app/session'
+import { useBusinessToday } from '../../app/useBusinessToday'
 import { Badge, Button, Card, EmptyState, ErrorBanner, Input, PageHeader, Spinner, Table, Td } from '../../components/ui'
 import { downloadCsv } from '../../lib/csv'
-import { dateTime, money, orderTypeLabel, paymentLabel, qty, today } from '../../lib/format'
+import { dateTime, money, orderTypeLabel, paymentLabel, qty } from '../../lib/format'
 import type { DayEndReport, SalesReport } from '../../types'
 
 type Tab = 'overview' | 'items' | 'taxes' | 'day-end'
@@ -26,12 +27,14 @@ export function ReportsPage() {
   const outletId = useOutletId()
   const { outlet } = useSession()
   const [tab, setTab] = useState<Tab>('overview')
-  const [range, setRange] = useState(() => ({ from: today(), to: today() }))
+  const t = useBusinessToday(outletId)
+  const [picked, setRange] = useState<{ from: string; to: string } | null>(null)
+  const range = picked ?? { from: t, to: t }
   const presets = [
-    { label: 'Today', from: today(), to: today() },
-    { label: 'Yesterday', from: shift(today(), -1), to: shift(today(), -1) },
-    { label: 'Last 7 days', from: shift(today(), -6), to: today() },
-    { label: 'This month', from: `${today().slice(0, 8)}01`, to: today() },
+    { label: 'Today', from: t, to: t },
+    { label: 'Yesterday', from: shift(t, -1), to: shift(t, -1) },
+    { label: 'Last 7 days', from: shift(t, -6), to: t },
+    { label: 'This month', from: `${t.slice(0, 8)}01`, to: t },
   ]
   const sales = useQuery({
     queryKey: ['reports', outletId, 'sales', range.from, range.to],
@@ -57,8 +60,8 @@ export function ReportsPage() {
       {tab === 'day-end' ? <DayEnd outletId={outletId} /> : (
         <>
           <div className="flex flex-wrap items-end gap-3">
-            <Input label="From" type="date" value={range.from} max={range.to} onChange={(e) => setRange((x) => ({ ...x, from: e.target.value }))} className="w-44" />
-            <Input label="To" type="date" value={range.to} min={range.from} onChange={(e) => setRange((x) => ({ ...x, to: e.target.value }))} className="w-44" />
+            <Input label="From" type="date" value={range.from} max={range.to} onChange={(e) => setRange({ ...range, from: e.target.value })} className="w-44" />
+            <Input label="To" type="date" value={range.to} min={range.from} onChange={(e) => setRange({ ...range, to: e.target.value })} className="w-44" />
             <div className="flex flex-wrap gap-2" role="group" aria-label="Date presets">
               {presets.map((p) => (
                 <Button key={p.label} size="sm" variant={range.from === p.from && range.to === p.to ? 'primary' : 'secondary'}
@@ -200,7 +203,9 @@ function Taxes({ r, fileSuffix }: { r: SalesReport; fileSuffix: string }) {
 }
 
 function DayEnd({ outletId }: { outletId: string }) {
-  const [date, setDate] = useState(today)
+  const businessToday = useBusinessToday(outletId)
+  const [picked, setDate] = useState<string | null>(null)
+  const date = picked ?? businessToday
   const report = useQuery({
     queryKey: ['reports', outletId, 'day-end', date],
     queryFn: () => api<DayEndReport>(`/api/outlets/${outletId}/reports/day-end?date=${date}`),
@@ -216,7 +221,7 @@ function DayEnd({ outletId }: { outletId: string }) {
   ] : []
   return (
     <div className="space-y-6">
-      <Input label="Business date" type="date" value={date} max={today()} onChange={(e) => setDate(e.target.value)} className="w-48" />
+      <Input label="Business date" type="date" value={date} max={businessToday} onChange={(e) => setDate(e.target.value)} className="w-48" />
       <ErrorBanner error={report.error} />
       {!d ? (report.error ? null : <Spinner />) : (
         <>
