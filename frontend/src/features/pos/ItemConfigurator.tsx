@@ -1,6 +1,7 @@
 import clsx from 'clsx'
 import { Minus, Plus } from 'lucide-react'
 import { useState } from 'react'
+import { newId } from '../../app/api'
 import { Button, Modal, Textarea } from '../../components/ui'
 import { money } from '../../lib/format'
 import type { PosMenuItem } from '../../types'
@@ -24,7 +25,7 @@ export function needsConfiguration(item: PosMenuItem) {
 
 export function simpleLine(item: PosMenuItem): DraftLine {
   return {
-    key: crypto.randomUUID(), menuItemId: item.id, variantId: null, modifierOptionIds: [], name: item.name, variantName: null,
+    key: newId(), menuItemId: item.id, variantId: null, modifierOptionIds: [], name: item.name, variantName: null,
     modifierNames: [], unitPrice: item.price, quantity: 1, notes: '',
   }
 }
@@ -59,7 +60,7 @@ export function ItemConfigurator({ item, onClose, onAdd }: { item: PosMenuItem; 
           <Button variant="secondary" size="sm" aria-label="Increase quantity" onClick={() => setQuantity((q) => q + 1)}><Plus className="size-4" /></Button>
         </div>
         <Button disabled={invalidGroups.length > 0} onClick={() => onAdd({
-          key: crypto.randomUUID(), menuItemId: item.id, variantId, modifierOptionIds: options.map((o) => o.id), name: item.name,
+          key: newId(), menuItemId: item.id, variantId, modifierOptionIds: options.map((o) => o.id), name: item.name,
           variantName: variant?.name ?? null, modifierNames: options.map((o) => o.name), unitPrice, quantity, notes: notes.trim(),
         })}>
           Add · {money(unitPrice * quantity)}

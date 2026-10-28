@@ -18,10 +18,10 @@ export function minutesSince(iso: string, now = Date.now()) {
   return Math.max(0, Math.floor((now - new Date(iso).getTime()) / 60000))
 }
 
-/** Local calendar date (yyyy-mm-dd) in the browser's time zone. */
-export function today() {
-  const d = new Date()
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10)
+/** Calendar date (yyyy-mm-dd) in the given IANA time zone, or the browser's when omitted. */
+export function today(timeZone?: string) {
+  // en-CA formats dates as yyyy-mm-dd.
+  return new Intl.DateTimeFormat('en-CA', { timeZone, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
 }
 
 export const orderTypeLabel = { DineIn: 'Dine-in', Takeaway: 'Takeaway', Delivery: 'Delivery' } as const
