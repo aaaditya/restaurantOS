@@ -2,6 +2,26 @@
 
 Newest entries first. Record only what was actually run; include the command and the result.
 
+## 2026-10-29 — Fixes from owner testing on a phone over the LAN
+
+### Completed
+
+- Opening the app over plain HTTP on a LAN address (for example `http://192.168.1.6:5173`) crashed
+  the POS and Orders screens and broke the item "Add" button: browsers expose `crypto.randomUUID`
+  only in secure contexts. `newId()` now falls back to `crypto.getRandomValues`, and every caller uses it.
+- Route errors now show a friendly screen with Back and Reload instead of the framework's developer page.
+- Orders, Reports and Day-end defaulted to the browser's calendar date, but orders are filed by
+  outlet-local business date, so "today" could show nothing when the two differ (for example after
+  midnight in India on a UTC machine). Defaults now use the outlet's time zone.
+
+### Verified
+
+| Check | Result |
+| --- | --- |
+| New `e2e/lan-http.spec.ts` (removes `crypto.randomUUID`, configures an item, sends KOT, settles) | fails with the reported error before the fix, passes after |
+| `npx playwright test` | 8/8 passed, run while UTC and India dates differed (the reports spec failed before the date fix) |
+| `npm run lint` / `npm run build` | 0 errors / passed |
+
 ## 2026-10-27 — Phase 7: production hardening
 
 ### Completed
