@@ -112,7 +112,7 @@ export function OrderScreen() {
   const canSend = editable && (draft.length > 0 || pendingServer.length > 0) && order?.status !== 'AwaitingAcceptance'
 
   return (
-    <div className="-m-4 flex h-[calc(100vh-2rem)] flex-col sm:-m-6 lg:-m-8 lg:h-screen">
+    <div className="-m-4 flex min-h-0 flex-1 flex-col sm:-m-6 lg:-m-8">
       <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 bg-white px-4 py-3">
         <Link to="/pos" className="rounded-md p-1.5 hover:bg-slate-100" aria-label="Back to POS"><ArrowLeft className="size-5" /></Link>
         <div>
@@ -142,7 +142,7 @@ export function OrderScreen() {
               <span className="sr-only">Search items</span>
               <Search className="pointer-events-none absolute left-3 top-2.5 size-4 text-slate-400" aria-hidden />
               <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search items…"
-                className="w-full rounded-lg border-0 py-2 pl-9 pr-3 text-sm ring-1 ring-slate-300 focus:ring-2 focus:ring-brand-600" />
+                className="w-full rounded-lg border-0 py-2 pl-9 pr-3 text-sm ring-1 ring-field focus:ring-2 focus:ring-brand-600" />
             </label>
           </div>
           <div className="grid flex-1 auto-rows-min grid-cols-2 gap-2 overflow-y-auto p-3 lg:grid-cols-3 2xl:grid-cols-4">

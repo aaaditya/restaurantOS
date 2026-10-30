@@ -82,7 +82,7 @@ export function ReportsPage() {
 function Kpi({ label, value, sub, testId }: { label: string; value: string; sub?: string; testId?: string }) {
   return (
     <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="text-sm text-slate-500">{label}</p>
       <p className="mt-1 text-2xl font-semibold text-slate-900" data-testid={testId}>{value}</p>
       {sub && <p className="mt-0.5 text-xs text-slate-500">{sub}</p>}
     </div>

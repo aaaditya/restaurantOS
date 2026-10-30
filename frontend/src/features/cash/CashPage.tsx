@@ -81,7 +81,7 @@ export function CashPage() {
 function Stat({ label, value, testId }: { label: string; value: string; testId?: string }) {
   return (
     <div>
-      <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</dt>
+      <dt className="text-sm text-slate-500">{label}</dt>
       <dd className="mt-1 text-lg font-semibold text-slate-900" data-testid={testId}>{value}</dd>
     </div>
   )

@@ -24,19 +24,19 @@ export function Button({
       type={type}
       disabled={disabled || loading}
       className={clsx(
-        'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors disabled:cursor-not-allowed',
+        'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-[color,background-color,transform] duration-100 active:translate-y-px disabled:cursor-not-allowed disabled:active:translate-y-0 motion-reduce:transition-none motion-reduce:active:translate-y-0',
         size === 'sm' && 'px-2.5 py-1.5 text-sm', size === 'md' && 'px-4 py-2 text-sm', size === 'lg' && 'px-5 py-3 text-base',
         buttonStyles[variant], className,
       )}
       {...rest}
     >
-      {loading && <Loader2 className="size-4 animate-spin" aria-hidden />}
+      {loading && <Loader2 className="size-4 motion-safe:animate-spin" aria-hidden />}
       {children}
     </button>
   )
 }
 
-const inputClass = 'block w-full rounded-lg border-0 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-brand-600 disabled:bg-slate-100'
+const inputClass = 'block w-full rounded-lg border-0 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm ring-1 ring-inset ring-field placeholder:text-slate-400 focus:ring-2 focus:ring-brand-600 disabled:bg-slate-100'
 
 export function Field({ label, hint, error, children, className }: { label: string; hint?: string; error?: string; children: (id: string) => ReactNode; className?: string }) {
   const id = useId()
@@ -69,7 +69,7 @@ export function Select({ label, className, children, ...rest }: SelectHTMLAttrib
 export function Checkbox({ label, checked, onChange, disabled }: { label: string; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (
     <label className="inline-flex items-center gap-2 text-sm text-slate-700">
-      <input type="checkbox" className="size-4 rounded border-slate-300 text-brand-700 focus:ring-brand-600" checked={checked}
+      <input type="checkbox" className="size-4 rounded border-field text-brand-700 focus:ring-brand-600" checked={checked}
         disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
       {label}
     </label>
@@ -115,7 +115,7 @@ export function PageHeader({ title, description, actions }: { title: string; des
 export function Spinner({ label = 'Loading…' }: { label?: string }) {
   return (
     <div className="flex items-center justify-center gap-2 p-8 text-sm text-slate-500" role="status">
-      <Loader2 className="size-5 animate-spin" aria-hidden /> {label}
+      <Loader2 className="size-5 motion-safe:animate-spin" aria-hidden /> {label}
     </div>
   )
 }
@@ -215,7 +215,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={push}>
       {children}
-      <div className="pointer-events-none fixed bottom-4 right-4 z-50 flex flex-col gap-2" aria-live="polite">
+      {/* Top of the screen: POS and kitchen keep their primary actions along the bottom edge. */}
+      <div className="pointer-events-none fixed right-4 top-4 z-50 flex flex-col gap-2" aria-live="polite">
         {toasts.map((t) => (
           <div key={t.id} className={clsx('pointer-events-auto rounded-lg px-4 py-3 text-sm font-medium shadow-lg',
             t.tone === 'success' && 'bg-emerald-700 text-white', t.tone === 'error' && 'bg-rose-700 text-white', t.tone === 'info' && 'bg-slate-800 text-white')}>

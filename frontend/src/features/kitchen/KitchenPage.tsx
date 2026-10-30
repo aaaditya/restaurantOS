@@ -81,7 +81,7 @@ export function KitchenPage() {
           const items = list.filter((k) => k.kind === 'Normal' && k.status === col.status)
           return (
             <section key={col.status} aria-label={col.title} className="rounded-xl bg-slate-100 p-3">
-              <h2 className="mb-3 flex items-center justify-between text-sm font-semibold uppercase tracking-wide text-slate-600">
+              <h2 className="mb-3 flex items-center justify-between text-base font-semibold text-slate-800">
                 {col.title} <span className="rounded-full bg-white px-2 py-0.5 text-xs">{items.length}</span>
               </h2>
               <div className="space-y-3">

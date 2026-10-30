@@ -159,7 +159,7 @@ function ItemsTab({ data, editable }: { data: ReturnType<typeof useMenuData>; ed
                     <Checkbox label={info.isAvailable ? 'Available' : 'Unavailable'} checked={info.isAvailable}
                       disabled={toggle.isPending} onChange={(v) => toggle.mutate({ item, isAvailable: v })} />
                   ) : <Badge tone={info.isAvailable ? 'green' : 'red'}>{info.isAvailable ? 'Available' : 'Unavailable'}</Badge>
-                ) : <span className="text-slate-400">—</span>}
+                ) : <span className="text-slate-500">{item.isActive ? 'Not listed' : 'Inactive'}</span>}
               </Td>
               <Td className="text-right whitespace-nowrap">
                 {can('MenuManage') && item.isActive && info && (

@@ -58,19 +58,19 @@ export function BillingPage() {
       <Card title="Current subscription">
         <dl className="grid gap-4 p-4 sm:grid-cols-4">
           <div>
-            <dt className="text-xs uppercase tracking-wide text-slate-500">Plan</dt>
+            <dt className="text-sm text-slate-500">Plan</dt>
             <dd className="mt-1 text-lg font-semibold" data-testid="current-plan">{plan?.name ?? current.planCode}</dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wide text-slate-500">Status</dt>
+            <dt className="text-sm text-slate-500">Status</dt>
             <dd className="mt-1"><Badge tone={statusTone[current.status]}>{statusLabel[current.status]}</Badge></dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wide text-slate-500">{current.status === 'Trialing' ? 'Trial ends' : 'Current period ends'}</dt>
+            <dt className="text-sm text-slate-500">{current.status === 'Trialing' ? 'Trial ends' : 'Current period ends'}</dt>
             <dd className="mt-1 text-sm font-medium">{longDate(current.status === 'Trialing' ? current.trialEndsAt : current.currentPeriodEndsAt)}</dd>
           </div>
           <div>
-            <dt className="text-xs uppercase tracking-wide text-slate-500">Usage</dt>
+            <dt className="text-sm text-slate-500">Usage</dt>
             <dd className="mt-1 text-sm font-medium" data-testid="usage">
               {usage.outlets}{plan ? ` / ${plan.maxOutlets}` : ''} outlets · {usage.staff}{plan ? ` / ${plan.maxStaff}` : ''} staff
             </dd>

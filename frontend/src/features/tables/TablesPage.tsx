@@ -128,7 +128,7 @@ function QrDialog({ table, onClose }: { table: Table; onClose: () => void }) {
       </p>
       <div className="mt-4 flex flex-col items-center gap-3">
         {svg ? <img src={svg} alt={`QR code for table ${table.name}`} className="size-56 rounded-lg ring-1 ring-slate-200" data-testid="qr-image" />
-          : <div className="size-56 animate-pulse rounded-lg bg-slate-100" aria-hidden />}
+          : <div className="size-56 rounded-lg motion-safe:animate-pulse bg-slate-100" aria-hidden />}
         {svg && (
           <a href={svg} download={`table-${table.name.replace(/[^\w-]+/g, '_')}-qr.svg`}
             className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm font-medium text-brand-700 hover:bg-brand-50">

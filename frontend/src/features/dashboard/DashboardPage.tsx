@@ -45,7 +45,7 @@ export function DashboardPage() {
                       <Td>{o.orders}</Td>
                       <Td>{money(o.totalCollected)}</Td>
                       <Td>{o.runningOrders}</Td>
-                      <Td><div className="flex flex-wrap gap-1">{alerts.length ? alerts : <span className="text-slate-400">—</span>}</div></Td>
+                      <Td><div className="flex flex-wrap gap-1">{alerts.length ? alerts : <span className="text-slate-500">All clear</span>}</div></Td>
                     </tr>
                   )
                 })}
@@ -93,7 +93,7 @@ export function DashboardPage() {
 function Kpi({ label, value, testId }: { label: string; value: string; testId?: string }) {
   return (
     <div className="rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
+      <p className="text-sm text-slate-500">{label}</p>
       <p className="mt-1 text-2xl font-semibold text-slate-900" data-testid={testId}>{value}</p>
     </div>
   )
