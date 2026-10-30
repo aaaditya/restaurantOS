@@ -2,6 +2,28 @@
 
 Newest entries first. Record only what was actually run; include the command and the result.
 
+## 2026-10-31 — UI polish from a Hallmark design audit
+
+### Completed
+
+- Stat, column and form labels are sentence case in the body face instead of small tracked capitals
+  (dashboard, inventory, reports, cash, customers, billing, kitchen columns, POS table areas, outlet switcher).
+- Field edges use a `--color-field` token with 3:1 contrast; the login/signup gradient is a solid surface.
+- Buttons have a pressed state; spinners and the QR placeholder pulse respect reduced motion.
+- The order screen fills the space under the trial/subscription banners instead of `100vh`, so Settle and
+  Cancel order stay on screen; the app shell now scrolls inside `main`. Toasts moved to the top right.
+- The guest QR header drops the small-caps outlet line; the simulated partner order line drops `·` chains;
+  empty dashboard/menu cells say "All clear" / "Not listed" / "Inactive" instead of a dash.
+
+### Verified
+
+| Check | Result |
+| --- | --- |
+| Hallmark `sloplint.mjs src --scope app --render` (login, signup) | 22 FAIL → 1 (the Hallmark stamp comment, not adopted) |
+| `npx playwright test` | 8/8 passed |
+| `npm run lint` / `npm run build` | 0 errors / passed |
+| Screenshots at 1440×900 and 390×844 (order screen, dashboard, kitchen, POS) | Settle and Cancel order visible; menu page scrolls in `main` |
+
 ## 2026-10-29 — Fixes from owner testing on a phone over the LAN
 
 ### Completed
