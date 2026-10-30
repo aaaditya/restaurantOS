@@ -81,10 +81,9 @@ export function GuestOrderPage() {
 
   return (
     <div className="mx-auto min-h-screen max-w-2xl bg-slate-50 pb-28">
-      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur">
-        <p className="text-xs font-medium uppercase tracking-wide text-brand-700">{t.outlet}</p>
+      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white px-4 py-3">
         <h1 className="text-lg font-semibold">{t.restaurant}</h1>
-        <p className="text-sm text-slate-600">Table {t.table}</p>
+        <p className="text-sm text-slate-600">{t.outlet}, <span className="font-medium text-slate-800">Table {t.table}</span></p>
       </header>
 
       <div className="space-y-4 p-4">

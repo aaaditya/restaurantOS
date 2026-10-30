@@ -179,8 +179,11 @@ function SimulatorCard({ outletId, outletName }: { outletId: string; outletName:
         <div className="flex flex-wrap items-center gap-3">
           <Button variant="secondary" loading={send.isPending} onClick={() => send.mutate()}><Send className="size-4" aria-hidden /> Send test order</Button>
           {last && (
-            <span data-testid="simulated-order">
-              #{last.orderNumber} · {last.externalId} · {money(last.grandTotal)} · <Link to="/pos" className="font-medium text-brand-700 underline">Open POS</Link>
+            <span data-testid="simulated-order" className="flex flex-wrap items-center gap-x-4 gap-y-1">
+              <span className="font-medium">Order #{last.orderNumber}</span>
+              <span className="text-slate-500">Partner ref {last.externalId}</span>
+              <span>{money(last.grandTotal)}</span>
+              <Link to="/pos" className="font-medium text-brand-700 underline">Open POS</Link>
             </span>
           )}
         </div>

@@ -84,7 +84,7 @@ export function AppLayout() {
           <button className="text-slate-400 lg:hidden" onClick={() => setMobileOpen(false)} aria-label="Close menu"><X className="size-5" /></button>
         </div>
         <div className="px-4">
-          <label htmlFor="outlet-switcher" className="mb-1 block text-xs font-medium uppercase tracking-wide text-slate-400">Outlet</label>
+          <label htmlFor="outlet-switcher" className="mb-1 block text-sm text-slate-400">Outlet</label>
           <select id="outlet-switcher" value={outlet?.id ?? ''} onChange={(e) => selectOutlet(e.target.value)}
             className="w-full rounded-lg border-0 bg-slate-800 px-3 py-2 text-sm text-white ring-1 ring-slate-700 focus:ring-2 focus:ring-brand-500">
             {me?.outlets.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
@@ -101,8 +101,8 @@ export function AppLayout() {
       </aside>
       {mobileOpen && <div className="fixed inset-0 z-30 bg-slate-900/50 lg:hidden" onClick={() => setMobileOpen(false)} aria-hidden />}
 
-      <div className="flex min-w-0 flex-1 flex-col lg:pl-64">
-        <header className="no-print sticky top-0 z-20 flex items-center gap-3 border-b border-slate-200 bg-white/90 px-4 py-2 backdrop-blur lg:hidden">
+      <div className="flex h-dvh min-w-0 flex-1 flex-col lg:pl-64 print:h-auto">
+        <header className="no-print sticky top-0 z-20 flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-2 lg:hidden">
           <button onClick={() => setMobileOpen(true)} aria-label="Open menu" className="rounded-md p-1.5 hover:bg-slate-100"><MenuIcon className="size-5" /></button>
           <span className="font-semibold">{outlet?.name}</span>
         </header>
@@ -116,7 +116,7 @@ export function AppLayout() {
             Free trial ends {trialEnds.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
           </div>
         )}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8"><Outlet /></main>
+        <main className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4 sm:p-6 lg:p-8 print:overflow-visible"><Outlet /></main>
       </div>
     </div>
   )

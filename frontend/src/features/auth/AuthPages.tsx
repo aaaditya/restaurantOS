@@ -7,12 +7,12 @@ import { Button, Checkbox, ErrorBanner, Input } from '../../components/ui'
 
 function AuthShell({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-brand-50 via-white to-slate-100 px-4 py-12">
+    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-xl bg-brand-700 text-lg font-bold text-white">R</div>
           <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-          <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+          <p className="mt-1 text-sm text-slate-600">{subtitle}</p>
         </div>
         <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">{children}</div>
       </div>

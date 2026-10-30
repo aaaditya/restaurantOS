@@ -65,7 +65,7 @@ export function PosHome() {
           )}
           {areas.map(([area, list]) => (
             <section key={area} aria-label={`${area} tables`}>
-              <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-slate-500">{area}</h2>
+              <h2 className="mb-2 text-sm font-semibold text-slate-600">{area}</h2>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 2xl:grid-cols-6">
                 {list.map((t) => (
                   <button key={t.id}

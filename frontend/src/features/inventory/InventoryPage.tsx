@@ -64,11 +64,11 @@ function StockTab({ canAdjust }: { canAdjust: boolean }) {
   return (
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card><div className="p-4"><p className="text-xs font-medium uppercase text-slate-500">Stock value</p>
+        <Card><div className="p-4"><p className="text-sm text-slate-500">Stock value</p>
           <p className="mt-1 text-2xl font-semibold" data-testid="stock-value">{money(stock.data?.totalValue)}</p></div></Card>
-        <Card><div className="p-4"><p className="text-xs font-medium uppercase text-slate-500">Items tracked</p>
+        <Card><div className="p-4"><p className="text-sm text-slate-500">Items tracked</p>
           <p className="mt-1 text-2xl font-semibold">{stock.data?.items.length ?? 0}</p></div></Card>
-        <Card><div className="p-4"><p className="text-xs font-medium uppercase text-slate-500">Low or negative</p>
+        <Card><div className="p-4"><p className="text-sm text-slate-500">Low or negative</p>
           <p className={clsx('mt-1 text-2xl font-semibold', (stock.data?.lowCount ?? 0) > 0 && 'text-rose-700')}>{stock.data?.lowCount ?? 0}</p></div></Card>
       </div>
       <Card actions={canAdjust && (
